@@ -1,5 +1,7 @@
 package application;
 	
+import java.util.Random;
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -15,6 +17,7 @@ import sprite.Car;
 import sprite.Road;
 import sprite.Sprite;
 import sprite.SpriteHandler;
+import sprite.Wall;
 
 
 public class Main extends Application 
@@ -33,8 +36,7 @@ public class Main extends Application
 	private double yMove = 0;
 	private double xMove = 0;
 	
-	private double newY = 0;
-	private double newX = 0;
+	private static int roadNumberCoefficient = 1; //1 builds zero roads. Decrease to build more rows (see createCarAndRoads())
 	
 	public void start(Stage primaryStage) 
 	{
@@ -43,12 +45,11 @@ public class Main extends Application
 			Group gameNode = new Group(gameCanvas);
 			Scene gameScene = new Scene(gameNode);
 			
-			createCarAndRoads();
-				
+			roadNumberCoefficient = -3;
+			createCarAndRoads();				
 			drawGame();			
 			
-			gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			
+			gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());			
 			gameScene.setOnKeyPressed(new EventHandler<KeyEvent>() 
 			{
 				public void handle(KeyEvent event) 
@@ -124,15 +125,31 @@ public class Main extends Application
 	{
 		Image carImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
 		Image roadImage = new Image(this.getClass().getResource("Road.png").toString());
+		Image wallImage = new Image(this.getClass().getResource("Wall.png").toString());
 		car = new Car(carImage, 147.5, 650, 0);
 		
 		sprites = new SpriteHandler();
 		sprites.add(car);
 		
-		for (int i=1; i>-3; i--)
+		for (int i=1; i>roadNumberCoefficient; i--)
 		{
 			Road road = new Road(0, i*Road.HEIGHT, roadImage);
 			sprites.add(road);
+		}
+		
+		for (int i=0; i<10; i++)
+		{
+			double rndY = Wall.getRandomYCoordinate(roadNumberCoefficient);
+			double rndX = Wall.getRandomXCoordinate();
+						
+			Wall wall = new Wall(rndX, rndY, wallImage);
+			sprites.add(wall);
+		}
+		
+		boolean wallsInValidPositions = false;
+		while (!wallsInValidPositions)
+		{
+			wallsInValidPositions = sprites.checkWallsArePlacedCorrectly();
 		}
 	}
 	
@@ -143,21 +160,30 @@ public class Main extends Application
 		drawGame();
 	}
 	
-	private void drawRoad(GraphicsContext gc)
+	private void drawRoadAndWalls(GraphicsContext gc)
 	{	
 		boolean reachedEndOfTrack = true;
-		for (int i=0; i<sprites.size(); i++)
+		int size = sprites.size();
+		for (int i=0; i<size; i++)
 		{
 			Sprite sprite = sprites.elementAt(i);
 			if (sprite instanceof Road)
 			{
 				Road road = (Road) sprite;
-				gc.drawImage(road.getImage(), road.getPosX(), road.getPosY());
-				
+				gc.drawImage(road.getImage(), road.getPosX(), road.getPosY());				
 				if (road.getPosY() < 0)
 				{
 					reachedEndOfTrack = false;
 				}
+			}
+		}
+		for (int i=0; i<size; i++)
+		{
+			Sprite sprite = sprites.elementAt(i);
+			if (sprite instanceof Wall)
+			{
+				Wall wall = (Wall) sprite;
+				gc.drawImage(wall.getImage(), wall.getPosX(), wall.getPosY());
 			}
 		}
 		
@@ -175,7 +201,7 @@ public class Main extends Application
 		double height = gameCanvas.getHeight();
 		
 		gc.clearRect(0, 0, width, height);
-		drawRoad(gc);
+		drawRoadAndWalls(gc);
 		
 		double x = car.getPosX() + xMove;
 		double y = car.getPosY() - yMove;
@@ -213,6 +239,7 @@ public class Main extends Application
 			calculateXMovement();
 			updateVerticalPosition(false);
 		}
+		
 		drawGame();
 	}
 
@@ -315,5 +342,10 @@ public class Main extends Application
 		{
 			isCarCloseToTop = true;
 		}		
+	}
+	
+	public static int getRoadNumberCoefficient()
+	{
+		return roadNumberCoefficient;
 	}
 }
