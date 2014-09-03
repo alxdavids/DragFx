@@ -8,6 +8,8 @@ public class Car extends Sprite
 	public final static double HEIGHT = 37;
 	
 	private double rotation;
+	private double xMove = 0;
+	private double yMove = 0;
 	
 	public Car(Image image, double posX, double posY, double rotation)
 	{
@@ -24,5 +26,22 @@ public class Car extends Sprite
 	public void setRotation(double rotation)
 	{
 		this.rotation = rotation;
+	}
+	
+	public double getXMove()
+	{
+		return xMove;
+	}
+	public void setXMove(double xMove)
+	{
+		this.xMove = xMove;
+	}
+	public double getYMove()
+	{
+		return yMove;
+	}
+	public void setYMove(double yMove)
+	{
+		this.yMove = yMove;
 	}
 }
