@@ -2,12 +2,14 @@ package sprite;
 
 import java.util.Random;
 
+import application.Main;
 import javafx.scene.image.Image;
 
 public class Wall extends Sprite
 {
 	public final static double WIDTH = 68;
 	public final static double HEIGHT = 29;
+	public final static int BUFFER = 68;
 		
 	public Wall(double posX, double posY, Image image)
 	{
@@ -18,9 +20,10 @@ public class Wall extends Sprite
 	
 	public static double getRandomYCoordinate(int roadNumberCoefficient)
 	{
+		double minValue = roadNumberCoefficient*Road.HEIGHT + Main.TOP_BUFFER/2;
 		Random rnd = new Random();
 		double rndD = rnd.nextDouble();
-		return roadNumberCoefficient*Road.HEIGHT + (rndD*Road.HEIGHT*(1 - roadNumberCoefficient));
+		return  minValue + (rndD*(Road.HEIGHT - minValue));
 	}
 	
 	public static double getRandomXCoordinate()

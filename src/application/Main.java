@@ -23,6 +23,7 @@ import sprite.Wall;
 public class Main extends Application 
 {
 	private static final double MOVEMENT_AMOUNT = 4.5;
+	public static final int TOP_BUFFER = 200;
 	
 	private SpriteHandler sprites = null;
 	private Canvas gameCanvas = new Canvas(305,692);
@@ -139,7 +140,7 @@ public class Main extends Application
 		
 		for (int i=0; i<10; i++)
 		{
-			double rndY = Wall.getRandomYCoordinate(roadNumberCoefficient);
+			double rndY = Wall.getRandomYCoordinate(roadNumberCoefficient + 1);
 			double rndX = Wall.getRandomXCoordinate();
 						
 			Wall wall = new Wall(rndX, rndY, wallImage);
@@ -237,6 +238,10 @@ public class Main extends Application
 		{
 			calculateYMovement();
 			calculateXMovement();
+			
+			car.setXMove(xMove);
+			car.setYMove(yMove);
+			
 			updateVerticalPosition(false);
 		}
 		
@@ -323,22 +328,29 @@ public class Main extends Application
 			yMove = Math.abs(yMove)*Math.cos(rotationRadians);
 			xMove = Math.abs(xMove)*Math.sin(rotationRadians);
 		}
+		car.setYMove(yMove);
+		car.setXMove(xMove);
+		
+		boolean collision = sprites.resolveCollisions();
 
 		double oldY = car.getPosY();
 		double newY = oldY - yMove;
 		double oldX = car.getPosX();
 		double newX = oldX + xMove;
 		
-		if (newY > 0 && newY < gameCanvas.getHeight() - Car.HEIGHT)
+		if (!collision)
 		{
-			car.setPosY(newY);
-		}
-		if (newX > 0 && newX < gameCanvas.getWidth() - Car.HEIGHT)
-		{
-			car.setPosX(newX);
+			if (newY > 0 && newY < gameCanvas.getHeight() - Car.HEIGHT)
+			{
+				car.setPosY(newY);
+			}
+			if (newX > 0 && newX < gameCanvas.getWidth() - Car.HEIGHT)
+			{
+				car.setPosX(newX);
+			}
 		}
 		
-		if (newY < 200)
+		if (newY < TOP_BUFFER)
 		{
 			isCarCloseToTop = true;
 		}		

@@ -49,8 +49,8 @@ public class SpriteHandler extends Vector<Sprite>
 							double corrX = correspondingSprite.getPosX();
 							double corrY = correspondingSprite.getPosY();
 							
-							if (Math.abs(x-corrX) < 30
-							  && Math.abs(y-corrY) < 30)
+							if (Math.abs(x-corrX) < Wall.BUFFER
+							  && Math.abs(y-corrY) < Wall.BUFFER)
 							{
 								wallTooClose = true;
 							}
@@ -68,7 +68,7 @@ public class SpriteHandler extends Vector<Sprite>
 				 */
 				if (wallTooClose)
 				{
-					double rndY = Wall.getRandomYCoordinate(Main.getRoadNumberCoefficient());
+					double rndY = Wall.getRandomYCoordinate(Main.getRoadNumberCoefficient() + 1);
 					sprite.setPosY(rndY);
 
 					double rndX = Wall.getRandomXCoordinate();
@@ -79,5 +79,73 @@ public class SpriteHandler extends Vector<Sprite>
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Resolve collisions
+	 */
+	public boolean resolveCollisions()
+	{
+		boolean collisionHappened = false;
+		
+		Car car = (Car) this.elementAt(0);
+		double carX = car.getPosX();
+		double carY = car.getPosY();
+		double carXMove = car.getXMove();
+		double carYMove = car.getYMove();
+		
+		for (int i=1; i<this.size(); i++)
+		{
+			Sprite sprite = this.elementAt(i);
+			if (sprite instanceof Wall)
+			{
+				double wallX = sprite.getPosX();
+				double wallY = sprite.getPosY();
+				
+				double yDiff = Math.abs(carY-wallY);
+				double xDiff = Math.abs(carX-wallX);
+				
+				if (yDiff < Wall.HEIGHT
+				  && (xDiff < Wall.WIDTH
+					&& carX + Car.HEIGHT > wallX))
+				{
+					boolean applyX = false;
+					boolean applyY = false;
+					if (yDiff < xDiff)
+					{
+						if ((carX < wallX && carXMove > 0)
+						  || (carX > wallX && carXMove < 0))
+						{
+							applyX = true;
+						}
+					}
+					else if (xDiff < yDiff)
+					{
+						if ((carY < wallY && carYMove < 0)
+						  || (carY > wallY && carYMove > 0))
+						{
+							applyY = true;
+						}
+					}
+
+					if (applyY || applyX)
+					{
+						car.setPosY(carY + carYMove);
+						car.setPosX(carX - carXMove);
+						car.setYMove(-carYMove);
+						car.setXMove(-carXMove);
+
+						collisionHappened = true;
+
+						System.out.println("carX = " + carX);
+						System.out.println("carY = " + carY);
+						System.out.println("wallX = " + wallX);
+						System.out.println("wallY = " + wallY);
+					}
+				}
+			}
+		}
+		
+		return collisionHappened;
 	}
 }
