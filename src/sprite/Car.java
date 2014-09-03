@@ -1,46 +1,20 @@
 package sprite;
 
 import javafx.scene.image.Image;
-import javafx.scene.shape.Rectangle;
 
-public class Car
+public class Car extends Sprite
 {
 	public final static double WIDTH = 30;
 	public final static double HEIGHT = 37;
 	
-	private double posX;
-	private double posY;
 	private double rotation;
-	private Image carImage; 
 	
-	public Car(Image carImage, double posX, double posY, double rotation)
+	public Car(Image image, double posX, double posY, double rotation)
 	{
-		this.carImage = carImage;
-		this.posX = posX;
-		this.posY = posY;
+		super.image = image;
+		super.posX = posX;
+		super.posY = posY;
 		this.rotation = rotation;
-	}
-	
-	public Image getCarImage()
-	{
-		return carImage;
-	}
-	
-	public double getPosX()
-	{
-		return posX;
-	}
-	public void setPosX(double posX)
-	{
-		this.posX = posX;
-	}
-	public double getPosY()
-	{
-		return posY;
-	}
-	public void setPosY(double posY)
-	{
-		this.posY = posY;
 	}
 	
 	public double getRotation()
