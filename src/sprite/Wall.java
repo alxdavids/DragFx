@@ -9,7 +9,7 @@ public class Wall extends Sprite
 {
 	public final static double WIDTH = 68;
 	public final static double HEIGHT = 29;
-	public final static int BUFFER = 68;
+	public final static double BUFFER = WIDTH*1.5;
 		
 	public Wall(double posX, double posY, Image image)
 	{

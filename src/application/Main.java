@@ -28,6 +28,7 @@ import sprite.Road;
 import sprite.Sprite;
 import sprite.SpriteHandler;
 import sprite.Wall;
+import utils.RestrictiveTextField;
 
 
 public class Main extends Application 
@@ -48,6 +49,7 @@ public class Main extends Application
 	private double xMove = 0;
 	private boolean longGame = false;
 	private static boolean gameWon = false;
+	private boolean testMode = true;
 	
 	private String playerName = "";
 	
@@ -86,7 +88,11 @@ public class Main extends Application
 		
 		gameCanvas.setStyle("-fx-text-fill: #FE9A2E;");
 		
-		if (longGame)
+		if (testMode)
+		{
+			roadNumberCoefficient = -2;
+		}
+		else if (longGame)
 		{
 			roadNumberCoefficient = -10;
 		}
@@ -121,10 +127,20 @@ public class Main extends Application
 		{
 			public void handle(long arg0) 
 			{
-				updatePosition();
-				if (isCarCloseToTop && !endOfTrack)
+				if (!gameWon)
 				{
-					scrollScreen();
+					updatePosition();
+					if (isCarCloseToTop && !endOfTrack)
+					{
+						scrollScreen();
+					}
+				}
+				else 
+				{
+					gameScene.setOnKeyPressed(null);
+					gameScene.setOnKeyReleased(null);
+					car.setXMove(0);
+					car.setYMove(0);
 				}
 			}				
 		};
@@ -141,16 +157,19 @@ public class Main extends Application
 		Label name = new Label("Name:");
 		entryGrid.add(name, 0, 1);
 
-		TextField nameTextField = new TextField();
+		RestrictiveTextField nameTextField = new RestrictiveTextField();
+		nameTextField.setMaxLength(12);
 		entryGrid.add(nameTextField, 1, 1);
 		
 		Button btnLong = new Button("Long game");
+		btnLong.setDefaultButton(true);
 		HBox hbBtnLong = new HBox(10);
 		hbBtnLong.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtnLong.getChildren().add(btnLong);
 		entryGrid.add(hbBtnLong, 1, 4);
 		
 		Button btnShort = new Button("Short game");
+		btnShort.setDefaultButton(true);
 		HBox hbBtnShort = new HBox(10);
 		hbBtnShort.setAlignment(Pos.BOTTOM_LEFT);
 		hbBtnShort.getChildren().add(btnShort);
@@ -187,7 +206,15 @@ public class Main extends Application
 					return;
 				}
 				
-				playerName = name;				
+				if (testMode)
+				{
+					playerName = "Test subject";
+				}
+				else
+				{
+					playerName = name;
+				}
+				
 				startGame(primaryStage);
 			}
 		});
@@ -200,6 +227,10 @@ public class Main extends Application
 			errorAction.setFill(Color.FIREBRICK);
 			errorAction.setText("You must enter a name!");
 			return false;
+		}
+		else if (name.equals("t"))
+		{
+			testMode = true;
 		}
 		
 		return true;
@@ -344,8 +375,8 @@ public class Main extends Application
 		drawSprites(gc);
 		if (gameWon)
 		{
-			gc.setFont(new Font("Verdana", 26));
-			gc.fillText(playerName + " is the winner!", 25, Road.HEIGHT);			
+			gc.setFont(new Font("Verdana", 20));
+			gc.fillText(playerName + " is the winner!", 10, Car.HEIGHT*3);			
 		}
 		
 		double x = car.getPosX() + xMove;
