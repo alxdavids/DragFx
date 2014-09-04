@@ -122,7 +122,7 @@ public class Main extends Application
 		gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		
 		setRoadNumberCoefficient();
-		trackEnd = (roadNumberCoefficient-1)*Road.HEIGHT;
+		trackEnd = (roadNumberCoefficient+1)*Road.HEIGHT;
 		
 		createSprites();				
 		drawGame();			

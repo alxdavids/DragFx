@@ -26,6 +26,7 @@ To-do list
 	- ~~Create different car skins~~
 	- ~~Add something to entry screen to allow you to pick~~
 	- More car colours?
+- Leaderboard
 
 
 (Much Later)
