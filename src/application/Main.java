@@ -23,6 +23,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -76,7 +77,7 @@ public class Main extends Application
 	private Timeline timer = null;
 	private GridPane topBar = null;
 	
-	private String playerName = "";
+	private String playerOneName = "";
 	
 	private static int roadNumberCoefficient = 1; //1 builds zero roads. Decrease to build more rows (see createCarAndRoads())
 	
@@ -86,24 +87,81 @@ public class Main extends Application
 		{			
 			primaryStage.setTitle("DragFx");
 			
-			GridPane entryGrid = new GridPane();
-			entryGrid.setAlignment(Pos.CENTER);
-	        entryGrid.setHgap(10);
-	        entryGrid.setVgap(10);
-	        entryGrid.setPadding(new Insets(25, 25, 25, 25));
+			Scene initialScene = createInitialScene(primaryStage);
+			initialScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			
-	        initialiseEntryPane(entryGrid, primaryStage);
-	        
-			Scene entryScene = new Scene(entryGrid, 300, 275);
-			entryScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			
-			primaryStage.setScene(entryScene);
-			primaryStage.show();	
+			primaryStage.setScene(initialScene);
+			primaryStage.show();
 		} 
 		catch(Exception e) 
 		{
 			e.printStackTrace();
 		}
+	}
+
+	private Scene createInitialScene(Stage primaryStage)
+	{
+		BorderPane btnPane = new BorderPane();
+		btnPane.setPadding(new Insets(25, 25, 25, 25));
+		
+		Button btnSinglePlayer = new Button("Single player game");
+		btnSinglePlayer.setDefaultButton(true);
+		HBox hbBtnSingle = new HBox(10);
+		hbBtnSingle.getChildren().add(btnSinglePlayer);
+		
+		Button btnMultiPlayer = new Button("Multiplayer Game");
+		btnMultiPlayer.setDefaultButton(true);
+		HBox hbBtnMulti = new HBox(10);
+		hbBtnMulti.getChildren().add(btnMultiPlayer);
+		
+		Button btnLeaderboard = new Button("Leaderboard");
+		btnLeaderboard.setDefaultButton(true);
+		HBox hbBtnLeaderboard = new HBox(10);
+		hbBtnLeaderboard.getChildren().add(btnLeaderboard);
+		
+		setupInitialButtonActions(btnSinglePlayer, btnMultiPlayer, btnLeaderboard, primaryStage);
+		
+		btnPane.setTop(btnSinglePlayer);
+		btnPane.setCenter(btnMultiPlayer);
+		btnPane.setBottom(btnLeaderboard);
+		setCentralAlignment(btnSinglePlayer, btnLeaderboard);
+		
+		Scene initialScene = new Scene(btnPane, 300, 200);
+		return initialScene;
+	}
+
+	private void setCentralAlignment(Button btnSinglePlayer,
+			Button btnLeaderboard)
+	{
+		BorderPane.setAlignment(btnSinglePlayer, Pos.CENTER);
+		BorderPane.setAlignment(btnLeaderboard, Pos.CENTER);
+	}
+
+	private void setupInitialButtonActions(Button btnSinglePlayer, Button btnMultiPlayer, Button btnLeaderboard, Stage primaryStage)
+	{
+		btnSinglePlayer.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e)
+			{			
+				selectOptions(primaryStage);
+			}
+		});
+	}
+
+	private void selectOptions(Stage primaryStage)
+	{
+		GridPane entryGrid = new GridPane();
+		entryGrid.setAlignment(Pos.CENTER);
+		entryGrid.setHgap(10);
+		entryGrid.setVgap(10);
+		entryGrid.setPadding(new Insets(25, 25, 25, 25));
+		
+		initialiseEntryPane(entryGrid, primaryStage);
+		
+		Scene entryScene = new Scene(entryGrid, 300, 275);
+		entryScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+		
+		primaryStage.setScene(entryScene);
+		primaryStage.show();
 	}
 
 	private void startGame(Stage primaryStage)
@@ -339,11 +397,11 @@ public class Main extends Application
 		
 		if (testMode)
 		{
-			playerName = "Test subject";
+			playerOneName = "Test subject";
 		}
 		else
 		{
-			playerName = name;
+			playerOneName = name;
 		}
 		
 		startGame(primaryStage);
@@ -515,7 +573,7 @@ public class Main extends Application
 		drawSprites(gc);
 		if (gameWon)
 		{
-			Label winnerText = new Label(playerName + " is the winner!");
+			Label winnerText = new Label(playerOneName + " is the winner!");
 			winnerText.setId("winner-text");
 			topBar.add(winnerText, 0, 1, 2, 1);
 		}

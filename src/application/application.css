@@ -18,8 +18,9 @@
 }
 
 .button {
-	-fx-background-color: #FE9A2E;
-	-fx-border-color: black;
+	-fx-background-color: #555;
+	-fx-border-color: #FE9A2E;
+	-fx-text-fill: #eaeaea
 }
 
 .combo-box {
@@ -28,4 +29,9 @@
 
 .combo-box .list-cell {
 	-fx-background-color:  #555
+}
+
+.text-field {
+	-fx-background-color: #555;
+	-fx-text-fill: #eaeaea;
 }
