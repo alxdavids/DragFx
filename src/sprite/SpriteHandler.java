@@ -105,7 +105,7 @@ public class SpriteHandler extends Vector<Sprite>
 				double yDiff = Math.abs(carY-wallY);
 				double xDiff = Math.abs(carX-wallX);
 
-				if (yDiff < Wall.HEIGHT
+				if (yDiff < Wall.HEIGHT-1
 				  && (xDiff < Wall.WIDTH && carX + Car.HEIGHT > wallX))
 				{
 					boolean applyX = false;
@@ -121,7 +121,7 @@ public class SpriteHandler extends Vector<Sprite>
 					else if (Wall.WIDTH - xDiff > Wall.HEIGHT - yDiff - Car.HEIGHT/2)
 					{
 						if ((carY < wallY && carYMove < 0)
-						  || (carY > wallY && carYMove > 0))
+						  || (carY > wallY && carYMove > 0 && ((xDiff < Car.WIDTH) || (carX > wallX))))
 						{
 							applyY = true;
 						}
@@ -135,6 +135,11 @@ public class SpriteHandler extends Vector<Sprite>
 						car.setXMove(-carXMove);
 
 						collisionHappened = true;
+						
+						System.out.println("applyY = " + applyY);
+						System.out.println("applyX = " + applyX);
+						System.out.println("yDiff = " + yDiff);
+						System.out.println("xDiff = " + xDiff);
 					}
 				}
 			}
