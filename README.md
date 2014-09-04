@@ -6,12 +6,17 @@ Driving game that I'm making as part of my first attempt at learning JavaFx
 To-do list
 ==========
 
-- Create a GUI for the entry point of the game.
+- ~~Create a GUI for the entry point of the game.~~
+	- Make GUI nicer (add css and allow you to choose single player and multiplayer games)
+- Two player game on same computer
+- Ability to choose wasd or directional arrows to play with.
 - Progress bar for how far you've progressed along the track
-- Finish line
+- ~~Finish line~~
 - Timer and ability to record a time when completing a given race.
 - More sprites for going on the track?
-- Ability to choose longer or shorter race tracks with differing amounts of sprites on top
+	- e.g. oil slick?
+- ~~Ability to choose longer or shorter race tracks with differing amounts of sprites on top~~
+
 
 (Much Later)
 - server & client
