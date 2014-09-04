@@ -1,0 +1,8 @@
+#dragfx-text {
+	-fx-font-size: 14px;
+}
+
+.button {
+	-fx-background-color: #FE9A2E;
+	-fx-border-color: black;
+}

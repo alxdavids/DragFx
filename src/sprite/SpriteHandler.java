@@ -119,7 +119,7 @@ public class SpriteHandler extends Vector<Sprite>
 							applyX = true;
 						}
 					}
-					else if (Wall.WIDTH - xDiff > Wall.HEIGHT - yDiff)
+					else if (Wall.WIDTH - xDiff > Wall.HEIGHT - yDiff - Car.HEIGHT/2)
 					{
 						if ((carY < wallY && carYMove < 0)
 						  || (carY > wallY && carYMove > 0))
@@ -136,12 +136,17 @@ public class SpriteHandler extends Vector<Sprite>
 						car.setXMove(-carXMove);
 
 						collisionHappened = true;
-						
-						System.out.println("carX = " + carX);
-						System.out.println("carY = " + carY);
-						System.out.println("wallX = " + wallX);
-						System.out.println("wallY = " + wallY);
 					}
+				}
+			}
+			else if (sprite instanceof FinishLine)
+			{
+				double finishY = sprite.getPosY();
+				double yDiff = Math.abs(carY-finishY);
+				
+				if (yDiff < FinishLine.HEIGHT)
+				{
+					Main.setGameWon();
 				}
 			}
 		}
