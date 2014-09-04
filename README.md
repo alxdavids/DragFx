@@ -16,6 +16,14 @@ To-do list
 - More sprites for going on the track?
 	- e.g. oil slick?
 - ~~Ability to choose longer or shorter race tracks with differing amounts of sprites on top~~
+- Improve look and feel of game in general
+	- Make car look better
+	- Make different looking race tracks
+	- Improve the appearance of stationary sprites
+	- Improve the winner text
+- Allow users to pick different colour cars
+	- Create different car skins
+	- Add something to entry screen to allow you to pick
 
 
 (Much Later)
