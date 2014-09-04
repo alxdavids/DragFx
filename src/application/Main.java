@@ -1,6 +1,11 @@
 package application;
 	
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -12,17 +17,25 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Callback;
+import javafx.util.Duration;
 import sprite.Car;
 import sprite.FinishLine;
 import sprite.Road;
@@ -30,14 +43,20 @@ import sprite.Sprite;
 import sprite.SpriteHandler;
 import sprite.Wall;
 import utils.RestrictiveTextField;
+import utils.UpwardProgress;
 
 
 public class Main extends Application 
 {
-	private static final int LONG_GAME_LENGTH = -10;
-	private static final int SHORT_GAME_LENGTH = -5;
+	private static final int LONG_GAME_LENGTH = -15;
+	private static final int SHORT_GAME_LENGTH = -8;
 	private static final double MOVEMENT_AMOUNT = 4.5;
 	public static final int TOP_BUFFER = 200;
+	private static final String CAR_YELLOW_HTML = "#FFC601";
+	private static final String CAR_BLUE_HTML = "#2490FB";
+	private static final Color CAR_YELLOW = Color.web(CAR_YELLOW_HTML);
+	private static final Color CAR_BLUE = Color.web(CAR_BLUE_HTML);
+	private static final double TIME_GAP = 0.1;
 	
 	private SpriteHandler sprites = null;
 	private Canvas gameCanvas = new Canvas(305,692);
@@ -52,8 +71,14 @@ public class Main extends Application
 	private double xMove = 0;
 	private boolean longGame = false;
 	private static boolean gameWon = false;
-	private boolean testMode = true;
+	private boolean testMode = false;
 	private boolean useAlternateControls = false;
+	private static ProgressIndicator bar = null;
+	private static double trackEnd = 0;
+	private Color colorSelected = null;
+	private double time = 0;
+	private Timeline timer = null;
+	private GridPane topBar = null;
 	
 	private String playerName = "";
 	
@@ -87,23 +112,21 @@ public class Main extends Application
 
 	private void startGame(Stage primaryStage)
 	{
-		Group gameNode = new Group(gameCanvas);
-		Scene gameScene = new Scene(gameNode);	
+		Group progressBar = initProgressBar();
+		topBar = new GridPane(); 
+		topBar.setId("top-bar");
+		topBar.setPadding(new Insets(5, 5, 5, 5));
+		topBar.setPrefSize(gameCanvas.getWidth(), 50);
 		
-		gameCanvas.setStyle("-fx-text-fill: #FE9A2E;");
+		Label timerText = new Label();
+		timerText.setId("timer-text");
+		topBar.add(timerText, 0, 0);
 		
-		if (testMode)
-		{
-			roadNumberCoefficient = -2;
-		}
-		else if (longGame)
-		{
-			roadNumberCoefficient = LONG_GAME_LENGTH;
-		}
-		else
-		{
-			roadNumberCoefficient = SHORT_GAME_LENGTH;
-		}
+		Scene gameScene = new Scene(new VBox(topBar, new HBox(gameCanvas, progressBar)));	
+		gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+		
+		setRoadNumberCoefficient();
+		trackEnd = (roadNumberCoefficient-1)*Road.HEIGHT;
 		
 		createSprites();				
 		drawGame();			
@@ -125,7 +148,19 @@ public class Main extends Application
 		});
 		
 		primaryStage.setScene(gameScene);
-		primaryStage.show();			
+		primaryStage.show();	
+		
+		timer = new Timeline(
+			new KeyFrame(Duration.seconds(0), new EventHandler<ActionEvent>() {
+		          @Override public void handle(ActionEvent actionEvent) {
+		        	  	timerText.setText("" + time);
+		        	  	time = time + TIME_GAP;
+		            }
+		          }),
+		    new KeyFrame(Duration.seconds(TIME_GAP))
+		);
+		timer.setCycleCount(Timeline.INDEFINITE);
+		timer.play();
 		
 		animTimer = new AnimationTimer() 
 		{
@@ -145,11 +180,46 @@ public class Main extends Application
 					gameScene.setOnKeyReleased(null);
 					car.setXMove(0);
 					car.setYMove(0);
+					timer.stop();					
 				}
 			}				
 		};
 		
 		animTimer.start();
+	}
+	
+	private Group initProgressBar() 
+	{
+        UpwardProgress upwardProgress = new UpwardProgress(15, 692);
+
+        bar = upwardProgress.getProgressBar();
+        if (colorSelected.equals(CAR_YELLOW))
+        {
+        	bar.setStyle("-fx-base: skyblue; -fx-accent: " + CAR_YELLOW_HTML);
+        }
+        else
+        {
+        	bar.setStyle("-fx-base: skyblue; -fx-accent: " + CAR_BLUE_HTML);
+        }
+        bar.setProgress(0);
+
+        return upwardProgress.getProgressHolder();
+    }
+
+	private void setRoadNumberCoefficient()
+	{
+		if (testMode)
+		{
+			roadNumberCoefficient = -2;
+		}
+		else if (longGame)
+		{
+			roadNumberCoefficient = LONG_GAME_LENGTH;
+		}
+		else
+		{
+			roadNumberCoefficient = SHORT_GAME_LENGTH;
+		}
 	}
 
 	private void initialiseEntryPane(GridPane entryGrid, Stage primaryStage)
@@ -165,85 +235,128 @@ public class Main extends Application
 		nameTextField.setMaxLength(12);
 		entryGrid.add(nameTextField, 1, 1);
 		
+		ComboBox<Color> cmb = addCarColorComboBox(entryGrid);
+		
 		Button btnLong = new Button("Long game");
 		btnLong.setDefaultButton(true);
 		HBox hbBtnLong = new HBox(10);
 		hbBtnLong.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtnLong.getChildren().add(btnLong);
-		entryGrid.add(hbBtnLong, 1, 5);
+		entryGrid.add(hbBtnLong, 1, 6);
 		
 		Button btnShort = new Button("Short game");
 		btnShort.setDefaultButton(true);
 		HBox hbBtnShort = new HBox(10);
 		hbBtnShort.setAlignment(Pos.BOTTOM_LEFT);
 		hbBtnShort.getChildren().add(btnShort);
-		entryGrid.add(hbBtnShort, 0, 5);
+		entryGrid.add(hbBtnShort, 0, 6);
 		
 		CheckBox cBox = new CheckBox("Use WAD controls");
 		entryGrid.add(cBox, 0, 4, 2, 1);
 		
 		final Text errorAction = new Text();
-        entryGrid.add(errorAction, 0, 6, 2, 1);
+        entryGrid.add(errorAction, 0, 7, 2, 1);
 		
+		setButtonActions(primaryStage, nameTextField, btnLong, btnShort, cBox, errorAction, cmb);
+	}
+
+	private ComboBox<Color> addCarColorComboBox(GridPane entryGrid)
+	{		
+		ComboBox<Color> cmb = new ComboBox<Color>();
+        cmb.getItems().addAll(CAR_YELLOW, CAR_BLUE);
+        
+        cmb.setCellFactory(new Callback<ListView<Color>, ListCell<Color>>() {
+        	public ListCell<Color> call(ListView<Color> p) 
+        	{
+        		return new ListCell<Color>() {
+        			private final Rectangle rectangle;
+        			{ 
+        				setContentDisplay(ContentDisplay.GRAPHIC_ONLY); 
+        				rectangle = new Rectangle(10, 10);
+        			}
+
+        			protected void updateItem(Color item, boolean empty) 
+        			{
+        				super.updateItem(item, empty);
+
+        				if (item == null || empty) 
+        				{
+        					setGraphic(null);
+        				} 
+        				else 
+        				{
+        					rectangle.setFill(item);
+        					setGraphic(rectangle);
+        				}
+        			}
+        		};
+        	}
+        });    
+        
+        //render selected colour in combobox
+        cmb.setButtonCell(cmb.getCellFactory().call(null));
+        
+        Label lbl = new Label("Choose car colour: ");
+        
+        entryGrid.add(new HBox(lbl, cmb), 0, 5, 2, 1);
+        
+        return cmb;
+	}
+
+	private void setButtonActions(Stage primaryStage, RestrictiveTextField nameTextField, Button btnLong, Button btnShort, CheckBox cBox, 
+			final Text errorAction, ComboBox<Color> cmb)
+	{
 		btnLong.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e)
-			{
-				errorAction.setText("");				
-				longGame = true;
-								
-				String name = nameTextField.getText();
-				if (!checkNameEntered(errorAction, name))
-				{
-					return;
-				}
-
-				useAlternateControls = cBox.isSelected();
-				
-				if (testMode)
-				{
-					playerName = "Test subject";
-				}
-				else
-				{
-					playerName = name;
-				}
-				
-				startGame(primaryStage);
+			{			
+				longGame = true;								
+				initialiseGame(primaryStage, nameTextField, cBox, errorAction, cmb);
 			}
 		});
 		
 		btnShort.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e)
 			{
-				errorAction.setText("");
-				
-				String name = nameTextField.getText();
-				if (!checkNameEntered(errorAction, name))
-				{
-					return;
-				}
-				
-				useAlternateControls = cBox.isSelected();
-				
-				if (testMode)
-				{
-					playerName = "Test subject";
-				}
-				else
-				{
-					playerName = name;
-				}
-				
-				startGame(primaryStage);
+				initialiseGame(primaryStage, nameTextField, cBox, errorAction, cmb);
 			}
 		});
+	}
+	
+	private void initialiseGame(Stage primaryStage, RestrictiveTextField nameTextField, CheckBox cBox, final Text errorAction, ComboBox<Color> cmb)
+	{
+		errorAction.setText("");
+		errorAction.setFill(Color.FIREBRICK);
+		
+		String name = nameTextField.getText();
+		if (!checkNameEntered(errorAction, name))
+		{
+			return;
+		}
+		
+		useAlternateControls = cBox.isSelected();
+		colorSelected = cmb.getValue();
+		if (colorSelected == null)
+		{
+			errorAction.setText("You must select a colour for you car!");
+			return;
+		}
+		
+		if (testMode)
+		{
+			playerName = "Test subject";
+		}
+		else
+		{
+			playerName = name;
+		}
+		
+		startGame(primaryStage);
 	}
 	
 	private boolean checkNameEntered(final Text errorAction, String name)
 	{
 		if (name.isEmpty())
 		{
-			errorAction.setFill(Color.FIREBRICK);
 			errorAction.setText("You must enter a name!");
 			return false;
 		}
@@ -293,7 +406,15 @@ public class Main extends Application
 
 	private void createSprites()
 	{
-		Image carImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
+		Image carImage = null;
+		if (colorSelected.equals(CAR_YELLOW))
+		{
+			carImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
+		}
+		else
+		{
+			carImage = new Image(this.getClass().getResource("CarPixlrBlue.png").toString());
+		}
 		Image roadImage = new Image(this.getClass().getResource("Road.png").toString());
 		Image wallImage = new Image(this.getClass().getResource("Wall.png").toString());
 		Image finishLineImage = new Image(this.getClass().getResource("FinishLine.png").toString());
@@ -398,8 +519,9 @@ public class Main extends Application
 		drawSprites(gc);
 		if (gameWon)
 		{
-			gc.setFont(new Font("Verdana", 20));
-			gc.fillText(playerName + " is the winner!", 10, Car.HEIGHT*3);			
+			Label winnerText = new Label(playerName + " is the winner!");
+			winnerText.setId("winner-text");
+			topBar.add(winnerText, 0, 1, 2, 1);
 		}
 		
 		double x = car.getPosX() + xMove;
@@ -565,5 +687,17 @@ public class Main extends Application
 	public static void setGameWon()
 	{
 		gameWon = true;
+	}	
+	public static ProgressIndicator getProgressIndicator()
+	{
+		return bar;
+	}
+	public static void setProgressBar(double progress)
+	{
+		bar.setProgress(progress);
+	}
+	public static double getTrackEnd()
+	{
+		return trackEnd;
 	}
 }

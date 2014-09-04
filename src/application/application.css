@@ -2,7 +2,30 @@
 	-fx-font-size: 14px;
 }
 
+#winner-text {
+	-fx-font-size: 14px;
+	-fx-font-weight: bold;	
+	-fx-text-fill: #eaeaea;
+}
+
+#timer-text {
+	-fx-font-size: 14px;
+	-fx-text-fill: #eaeaea;
+}
+
+#top-bar {
+	-fx-background-color: #222;
+}
+
 .button {
 	-fx-background-color: #FE9A2E;
 	-fx-border-color: black;
+}
+
+.combo-box {
+	-fx-background-color: #222;
+}
+
+.combo-box .list-cell {
+	-fx-background-color:  #555
 }

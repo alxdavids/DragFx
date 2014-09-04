@@ -14,13 +14,21 @@ public class SpriteHandler extends Vector<Sprite>
 	
 	public void scrollSprites(double yMove)
 	{
+		double lowestY = 0;
 		for (int i=0; i<this.size(); i++)
 		{
 			Sprite sprite = this.elementAt(i);
 			double oldY = sprite.getPosY();
 			double newY = oldY + yMove;
 			sprite.setPosY(newY);
+			if (newY < lowestY)
+			{
+				lowestY = newY;
+			}
 		}
+		
+		double trackEnd = Main.getTrackEnd();
+		Main.setProgressBar(1-(lowestY/trackEnd));
 	}
 
 	/**
@@ -135,11 +143,6 @@ public class SpriteHandler extends Vector<Sprite>
 						car.setXMove(-carXMove);
 
 						collisionHappened = true;
-						
-						System.out.println("applyY = " + applyY);
-						System.out.println("applyX = " + applyX);
-						System.out.println("yDiff = " + yDiff);
-						System.out.println("xDiff = " + xDiff);
 					}
 				}
 			}
