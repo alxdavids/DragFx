@@ -105,7 +105,7 @@ public class SpriteHandler extends Vector<Sprite>
 				double yDiff = Math.abs(carY-wallY);
 				double xDiff = Math.abs(carX-wallX);
 
-				if (yDiff < Wall.HEIGHT-1
+				if (yDiff < Wall.HEIGHT
 				  && (xDiff < Wall.WIDTH && carX + Car.HEIGHT > wallX))
 				{
 					boolean applyX = false;

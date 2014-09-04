@@ -9,7 +9,7 @@ To-do list
 - ~~Create a GUI for the entry point of the game.~~
 	- Make GUI nicer (add css and allow you to choose single player and multiplayer games)
 - Two player game on same computer
-- Ability to choose wasd or directional arrows to play with.
+- ~~Ability to choose wasd or directional arrows to play with.~~
 - Progress bar for how far you've progressed along the track
 - ~~Finish line~~
 - Timer and ability to record a time when completing a given race.

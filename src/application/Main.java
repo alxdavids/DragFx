@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -33,6 +34,8 @@ import utils.RestrictiveTextField;
 
 public class Main extends Application 
 {
+	private static final int LONG_GAME_LENGTH = -10;
+	private static final int SHORT_GAME_LENGTH = -5;
 	private static final double MOVEMENT_AMOUNT = 4.5;
 	public static final int TOP_BUFFER = 200;
 	
@@ -50,6 +53,7 @@ public class Main extends Application
 	private boolean longGame = false;
 	private static boolean gameWon = false;
 	private boolean testMode = true;
+	private boolean useAlternateControls = false;
 	
 	private String playerName = "";
 	
@@ -94,11 +98,11 @@ public class Main extends Application
 		}
 		else if (longGame)
 		{
-			roadNumberCoefficient = -10;
+			roadNumberCoefficient = LONG_GAME_LENGTH;
 		}
 		else
 		{
-			roadNumberCoefficient = -5;
+			roadNumberCoefficient = SHORT_GAME_LENGTH;
 		}
 		
 		createSprites();				
@@ -166,31 +170,44 @@ public class Main extends Application
 		HBox hbBtnLong = new HBox(10);
 		hbBtnLong.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtnLong.getChildren().add(btnLong);
-		entryGrid.add(hbBtnLong, 1, 4);
+		entryGrid.add(hbBtnLong, 1, 5);
 		
 		Button btnShort = new Button("Short game");
 		btnShort.setDefaultButton(true);
 		HBox hbBtnShort = new HBox(10);
 		hbBtnShort.setAlignment(Pos.BOTTOM_LEFT);
 		hbBtnShort.getChildren().add(btnShort);
-		entryGrid.add(hbBtnShort, 0, 4);
+		entryGrid.add(hbBtnShort, 0, 5);
+		
+		CheckBox cBox = new CheckBox("Use WAD controls");
+		entryGrid.add(cBox, 0, 4, 2, 1);
 		
 		final Text errorAction = new Text();
-        entryGrid.add(errorAction, 1, 6);
+        entryGrid.add(errorAction, 0, 6, 2, 1);
 		
 		btnLong.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e)
 			{
 				errorAction.setText("");				
 				longGame = true;
-				
+								
 				String name = nameTextField.getText();
 				if (!checkNameEntered(errorAction, name))
 				{
 					return;
 				}
+
+				useAlternateControls = cBox.isSelected();
 				
-				playerName = name;
+				if (testMode)
+				{
+					playerName = "Test subject";
+				}
+				else
+				{
+					playerName = name;
+				}
+				
 				startGame(primaryStage);
 			}
 		});
@@ -205,6 +222,8 @@ public class Main extends Application
 				{
 					return;
 				}
+				
+				useAlternateControls = cBox.isSelected();
 				
 				if (testMode)
 				{
@@ -238,12 +257,13 @@ public class Main extends Application
 
 	private void handleKeyReleased(KeyEvent event)
 	{
-		if (event.getCode() == KeyCode.UP) 
+		if (event.getCode() == KeyCode.UP && !useAlternateControls
+		  || event.getCode() == KeyCode.W && useAlternateControls)  
 		{
 			verticalEnabled = false;
 		}
-		else if (event.getCode() == KeyCode.RIGHT
-		  || event.getCode() == KeyCode.LEFT)
+		else if ((event.getCode() == KeyCode.RIGHT && !useAlternateControls || event.getCode() == KeyCode.D && useAlternateControls)
+		  || (event.getCode() == KeyCode.LEFT && !useAlternateControls || event.getCode() == KeyCode.A && useAlternateControls))
 		{
 			rotationEnabled = false;
 			rotMove = 0;
@@ -252,16 +272,19 @@ public class Main extends Application
 	
 	private void handleKeyPressed(KeyEvent event)
 	{
-		if (event.getCode() == KeyCode.UP) 
+		if (event.getCode() == KeyCode.UP && !useAlternateControls
+		  || event.getCode() == KeyCode.W && useAlternateControls) 
 		{
 			verticalEnabled = true;
 		}
-		else if (event.getCode() == KeyCode.RIGHT)
+		else if (event.getCode() == KeyCode.RIGHT && !useAlternateControls
+		  || event.getCode() == KeyCode.D && useAlternateControls)
 		{
 			rotationEnabled = true;
 			rotMove = 5; 						
 		}
-		else if (event.getCode() == KeyCode.LEFT)
+		else if (event.getCode() == KeyCode.LEFT && !useAlternateControls
+		  || event.getCode() == KeyCode.A && useAlternateControls)
 		{
 			rotationEnabled = true;
 			rotMove = -5;
