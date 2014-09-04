@@ -10,9 +10,10 @@ To-do list
 	- Make GUI nicer (add css and allow you to choose single player and multiplayer games)
 - Two player game on same computer
 - ~~Ability to choose wasd or directional arrows to play with.~~
-- Progress bar for how far you've progressed along the track
+- ~~Progress bar for how far you've progressed along the track~~
 - ~~Finish line~~
-- Timer and ability to record a time when completing a given race.
+- ~~Timer~~ 
+	- Ability to record a time when completing a given race.
 - More sprites for going on the track?
 	- e.g. oil slick?
 - ~~Ability to choose longer or shorter race tracks with differing amounts of sprites on top~~
@@ -20,10 +21,11 @@ To-do list
 	- Make car look better
 	- Make different looking race tracks
 	- Improve the appearance of stationary sprites
-	- Improve the winner text
-- Allow users to pick different colour cars
-	- Create different car skins
-	- Add something to entry screen to allow you to pick
+	- ~~Improve the winner text~~
+- ~~Allow users to pick different colour cars~~
+	- ~~Create different car skins~~
+	- ~~Add something to entry screen to allow you to pick~~
+	- More car colours?
 
 
 (Much Later)
