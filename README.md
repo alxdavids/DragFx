@@ -8,7 +8,10 @@ To-do list
 
 - ~~Create a GUI for the entry point of the game.~~
 	- Make GUI nicer (add css and allow you to choose single player and multiplayer games)
-- Two player game on same computer
+- ~~Two player game on same computer~~ (Two players on same screen but isn't ready for playing yet)
+	- Drag mode where players play until one car is left off the screen.
+	- Classic mode where players race to a finish line (will need a split screen)
+- Collisions between cars
 - ~~Ability to choose wasd or directional arrows to play with.~~
 - ~~Progress bar for how far you've progressed along the track~~
 - ~~Finish line~~

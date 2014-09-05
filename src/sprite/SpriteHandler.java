@@ -12,9 +12,10 @@ public class SpriteHandler extends Vector<Sprite>
 	{
 	}
 	
-	public void scrollSprites(double yMove)
+	public void scrollSprites(Car car)
 	{
 		double lowestY = 0;
+		double yMove = car.getYMove();
 		for (int i=0; i<this.size(); i++)
 		{
 			Sprite sprite = this.elementAt(i);
@@ -27,8 +28,7 @@ public class SpriteHandler extends Vector<Sprite>
 			}
 		}
 		
-		double trackEnd = Main.getTrackEnd();
-		Main.setProgressBar(1-(lowestY/trackEnd));
+		Main.setTrackEnd(lowestY);
 	}
 
 	/**
@@ -95,65 +95,69 @@ public class SpriteHandler extends Vector<Sprite>
 	public boolean resolveCollisions()
 	{
 		boolean collisionHappened = false;
-		
-		Car car = (Car) this.elementAt(0);
-		double carX = car.getPosX();
-		double carY = car.getPosY();
-		double carXMove = car.getXMove();
-		double carYMove = car.getYMove();
-		
-		for (int i=1; i<this.size(); i++)
+
+		for (int j=0; j<2; j++)
 		{
-			Sprite sprite = this.elementAt(i);
-			if (sprite instanceof Wall)
+			Car car = (Car) this.elementAt(j);
+			double carX = car.getPosX();
+			double carY = car.getPosY();
+			double carXMove = car.getXMove();
+			double carYMove = car.getYMove();
+
+			for (int i=2; i<this.size(); i++)
 			{
-				double wallX = sprite.getPosX();
-				double wallY = sprite.getPosY();
-				
-				double yDiff = Math.abs(carY-wallY);
-				double xDiff = Math.abs(carX-wallX);
-
-				if (yDiff < Wall.HEIGHT
-				  && (xDiff < Wall.WIDTH && carX + Car.HEIGHT > wallX))
+				Sprite sprite = this.elementAt(i);
+				if (sprite instanceof Wall)
 				{
-					boolean applyX = false;
-					boolean applyY = false;
-					if (Wall.HEIGHT - yDiff > Wall.WIDTH - xDiff - Car.WIDTH/2)
-					{
-						if ((carX < wallX && carXMove > 0)
-						  || (carX > wallX && carXMove < 0))
-						{
-							applyX = true;
-						}
-					}
-					else if (Wall.WIDTH - xDiff > Wall.HEIGHT - yDiff - Car.HEIGHT/2)
-					{
-						if ((carY < wallY && carYMove < 0)
-						  || (carY > wallY && carYMove > 0 && ((xDiff < Car.WIDTH) || (carX > wallX))))
-						{
-							applyY = true;
-						}
-					}
+					double wallX = sprite.getPosX();
+					double wallY = sprite.getPosY();
 
-					if (applyY || applyX)
-					{
-						car.setPosY(carY + carYMove);
-						car.setPosX(carX - carXMove);
-						car.setYMove(-carYMove);
-						car.setXMove(-carXMove);
+					double yDiff = Math.abs(carY-wallY);
+					double xDiff = Math.abs(carX-wallX);
 
-						collisionHappened = true;
+					if (yDiff < Wall.HEIGHT
+							&& (xDiff < Wall.WIDTH && carX + Car.HEIGHT > wallX))
+					{
+						boolean applyX = false;
+						boolean applyY = false;
+						if (Wall.HEIGHT - yDiff > Wall.WIDTH - xDiff - Car.WIDTH/2)
+						{
+							if ((carX < wallX && carXMove > 0)
+									|| (carX > wallX && carXMove < 0))
+							{
+								applyX = true;
+							}
+						}
+						else if (Wall.WIDTH - xDiff > Wall.HEIGHT - yDiff - Car.HEIGHT/2)
+						{
+							if ((carY < wallY && carYMove < 0)
+									|| (carY > wallY && carYMove > 0 && ((xDiff < Car.WIDTH) || (carX > wallX))))
+							{
+								applyY = true;
+							}
+						}
+
+						if (applyY || applyX)
+						{
+							car.setPosY(carY + carYMove);
+							car.setPosX(carX - carXMove);
+							car.setYMove(-carYMove);
+							car.setXMove(-carXMove);
+
+							collisionHappened = true;
+						}
 					}
 				}
-			}
-			else if (sprite instanceof FinishLine)
-			{
-				double finishY = sprite.getPosY();
-				double yDiff = Math.abs(carY-finishY);
-				
-				if (yDiff < FinishLine.HEIGHT)
+				else if (sprite instanceof FinishLine)
 				{
-					Main.setGameWon();
+					double finishY = sprite.getPosY();
+					double yDiff = Math.abs(carY-finishY);
+
+					if (yDiff < FinishLine.HEIGHT)
+					{
+						Main.setGameWon();
+						car.setWinner(true);
+					}
 				}
 			}
 		}

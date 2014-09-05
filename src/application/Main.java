@@ -1,5 +1,7 @@
 package application;
 	
+import java.util.Vector;
+
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -19,7 +21,6 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -40,7 +41,6 @@ import sprite.Sprite;
 import sprite.SpriteHandler;
 import sprite.Wall;
 import utils.RestrictiveTextField;
-import utils.UpwardProgress;
 
 
 public class Main extends Application 
@@ -49,37 +49,33 @@ public class Main extends Application
 	private static final int SHORT_GAME_LENGTH = -8;
 	private static final double MOVEMENT_AMOUNT = 4.5;
 	public static final int TOP_BUFFER = 200;
-	private static final String CAR_YELLOW_HTML = "#FFC601";
-	private static final String CAR_BLUE_HTML = "#2490FB";
-	private static final Color CAR_YELLOW = Color.web(CAR_YELLOW_HTML);
-	private static final Color CAR_BLUE = Color.web(CAR_BLUE_HTML);
+	public static final String CAR_YELLOW_HTML = "#FFC601";
+	public static final String CAR_BLUE_HTML = "#2490FB";
+	public static final Color CAR_YELLOW = Color.web(CAR_YELLOW_HTML);
+	public static final Color CAR_BLUE = Color.web(CAR_BLUE_HTML);
 	private static final double TIME_GAP = 0.1;
 	
 	private SpriteHandler sprites = null;
 	private Canvas gameCanvas = new Canvas(305,692);
-	private Car car;
+
 	private AnimationTimer animTimer;
-	private double rotMove = 0;
-	private boolean rotationEnabled = false;
-	private boolean verticalEnabled = false;	
-	private boolean isCarCloseToTop = false;
 	private boolean endOfTrack = false;
-	private double yMove = 0;
-	private double xMove = 0;
 	private boolean longGame = false;
 	private static boolean gameWon = false;
 	private boolean testMode = false;
-	private boolean useAlternateControls = false;
-	private static ProgressIndicator bar = null;
 	private static double trackEnd = 0;
-	private Color colorSelected = null;
 	private double time = 0;
 	private Timeline timer = null;
 	private GridPane topBar = null;
+	private Vector<Car> cars = null;
 	
-	private String playerOneName = "";
+	private static boolean singlePlayer = true;
+	
+	private Player playerOne = null;
+	private Player playerTwo = null;
 	
 	private static int roadNumberCoefficient = 1; //1 builds zero roads. Decrease to build more rows (see createCarAndRoads())
+	private static double trackDistance = 0;
 	
 	public void start(Stage primaryStage) 
 	{
@@ -145,6 +141,14 @@ public class Main extends Application
 				selectOptions(primaryStage);
 			}
 		});
+		
+		btnMultiPlayer.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e)
+			{		
+				singlePlayer = false;
+				selectOptions(primaryStage);
+			}
+		});
 	}
 
 	private void selectOptions(Stage primaryStage)
@@ -166,7 +170,13 @@ public class Main extends Application
 
 	private void startGame(Stage primaryStage)
 	{
-		Group progressBar = initProgressBar();
+		Vector<Player> players = new Vector<Player>();
+		players.add(playerOne);
+		if (!singlePlayer)
+		{
+			players.add(playerTwo);
+		}
+		
 		topBar = new GridPane(); 
 		topBar.setId("top-bar");
 		topBar.setPadding(new Insets(5, 5, 5, 5));
@@ -175,15 +185,34 @@ public class Main extends Application
 		Label timerText = new Label();
 		timerText.setId("timer-text");
 		topBar.add(timerText, 0, 0);
-		
-		Scene gameScene = new Scene(new VBox(topBar, new HBox(gameCanvas, progressBar)));	
-		gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-		
+				
 		setRoadNumberCoefficient();
-		trackEnd = (roadNumberCoefficient+1)*Road.HEIGHT;
+		trackEnd = (roadNumberCoefficient+1)*Road.HEIGHT + TOP_BUFFER;
 		
-		createSprites();				
-		drawGame();			
+		createSprites();
+		drawGame();
+		
+		Vector<Group> progressBars = new Vector<Group>();
+		for (int i=0; i<cars.size(); i++)
+		{
+			Car car = cars.elementAt(i);
+			Group progressBar = car.initProgressBar();
+			progressBars.add(progressBar);
+			initProgressBar(car);
+		}	
+		
+		HBox hBox = null;
+		if (singlePlayer)
+		{
+			hBox = new HBox(progressBars.elementAt(0));
+		}
+		else
+		{
+			hBox = new HBox(progressBars.elementAt(0), progressBars.elementAt(1));
+		}
+		
+		Scene gameScene = new Scene(new VBox(topBar, new HBox(gameCanvas, hBox)));	
+		gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 				
 		gameScene.setOnKeyPressed(new EventHandler<KeyEvent>() 
 		{
@@ -220,46 +249,45 @@ public class Main extends Application
 		{
 			public void handle(long arg0) 
 			{
-				if (!gameWon)
-				{
-					updatePosition();
-					if (isCarCloseToTop && !endOfTrack)
-					{
-						scrollScreen();
-					}
-				}
-				else 
-				{
-					gameScene.setOnKeyPressed(null);
-					gameScene.setOnKeyReleased(null);
-					car.setXMove(0);
-					car.setYMove(0);
-					timer.stop();					
-				}
-			}				
+				update(gameScene);
+			}			
 		};
 		
 		animTimer.start();
 	}
-	
-	private Group initProgressBar() 
+
+	private void initProgressBar(Car car)
 	{
-        UpwardProgress upwardProgress = new UpwardProgress(15, 692);
+		double carY = car.getPosY();
+		trackDistance = carY-trackEnd;
+		car.updateProgressBar();
+	}
 
-        bar = upwardProgress.getProgressBar();
-        if (colorSelected.equals(CAR_YELLOW))
-        {
-        	bar.setStyle("-fx-base: skyblue; -fx-accent: " + CAR_YELLOW_HTML);
-        }
-        else
-        {
-        	bar.setStyle("-fx-base: skyblue; -fx-accent: " + CAR_BLUE_HTML);
-        }
-        bar.setProgress(0);
-
-        return upwardProgress.getProgressHolder();
-    }
-
+	private void update(Scene gameScene)
+	{
+		if (!gameWon)
+		{
+			updatePosition();
+			for (int i=0; i<cars.size(); i++)
+			{
+				Car car = cars.elementAt(i);
+				if (car.getCarCloseToTop() && !endOfTrack)
+				{
+					scrollScreen(car);
+					break;
+				}
+			}
+		}
+		else 
+		{
+			gameScene.setOnKeyPressed(null);
+			gameScene.setOnKeyReleased(null);
+			
+			animTimer.stop();
+			timer.stop();					
+		}
+	}	
+	
 	private void setRoadNumberCoefficient()
 	{
 		if (testMode)
@@ -282,12 +310,82 @@ public class Main extends Application
 		scenetitle.setId("dragfx-text");
 		entryGrid.add(scenetitle, 0, 0, 2, 1);
 		
+		if (singlePlayer)
+		{
+			setupSinglePlayerGame(entryGrid, primaryStage);
+		}
+		else
+		{
+			setupMultiPlayerGame(entryGrid, primaryStage);
+		}
+	}
+
+	private void setupMultiPlayerGame(GridPane entryGrid, Stage primaryStage)
+	{
+		Label nameOne = new Label("Player one name:");
+		entryGrid.add(nameOne, 0, 1);
+		
+		RestrictiveTextField nameOneTextField = new RestrictiveTextField();
+		nameOneTextField.setMaxLength(12);
+		entryGrid.add(nameOneTextField, 1, 1);
+		
+		Label nameTwo = new Label("Player two name:");
+		entryGrid.add(nameTwo, 0, 2);
+		
+		RestrictiveTextField nameTwoTextField = new RestrictiveTextField();
+		nameTwoTextField.setMaxLength(12);
+		entryGrid.add(nameTwoTextField, 1, 2);
+		
+		Button btnLong = new Button("Long game");
+		btnLong.setDefaultButton(true);
+		HBox hbBtnLong = new HBox(10);
+		hbBtnLong.setAlignment(Pos.BOTTOM_RIGHT);
+		hbBtnLong.getChildren().add(btnLong);
+		entryGrid.add(hbBtnLong, 1, 3);
+		
+		Button btnShort = new Button("Short game");
+		btnShort.setDefaultButton(true);
+		HBox hbBtnShort = new HBox(10);
+		hbBtnShort.setAlignment(Pos.BOTTOM_LEFT);
+		hbBtnShort.getChildren().add(btnShort);
+		entryGrid.add(hbBtnShort, 0, 3);
+		
+		final Text errorAction = new Text();
+        entryGrid.add(errorAction, 0, 4, 2, 1);
+		
+        setMultiPlayerButtonActions(primaryStage, nameOneTextField, nameTwoTextField, btnLong, btnShort, errorAction);
+	}
+
+	private void setMultiPlayerButtonActions(Stage primaryStage, RestrictiveTextField nameOneTextField, RestrictiveTextField nameTwoTextField, Button btnLong, 
+								Button btnShort, Text errorAction)
+	{
+		btnLong.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e)
+			{			
+				longGame = true;								
+				initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
+			}
+		});
+		
+		btnShort.setOnAction(new EventHandler<ActionEvent>() {
+			public void handle(ActionEvent e)
+			{
+				initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
+			}
+		});
+	}
+	
+	private void setupSinglePlayerGame(GridPane entryGrid, Stage primaryStage)
+	{
 		Label name = new Label("Name:");
 		entryGrid.add(name, 0, 1);
 
 		RestrictiveTextField nameTextField = new RestrictiveTextField();
 		nameTextField.setMaxLength(12);
 		entryGrid.add(nameTextField, 1, 1);
+		
+		CheckBox cBox = new CheckBox("Use WAD controls");
+		entryGrid.add(cBox, 0, 4, 2, 1);
 		
 		ComboBox<Color> cmb = addCarColorComboBox(entryGrid);
 		
@@ -305,13 +403,10 @@ public class Main extends Application
 		hbBtnShort.getChildren().add(btnShort);
 		entryGrid.add(hbBtnShort, 0, 6);
 		
-		CheckBox cBox = new CheckBox("Use WAD controls");
-		entryGrid.add(cBox, 0, 4, 2, 1);
-		
 		final Text errorAction = new Text();
         entryGrid.add(errorAction, 0, 7, 2, 1);
 		
-		setButtonActions(primaryStage, nameTextField, btnLong, btnShort, cBox, errorAction, cmb);
+		setSinglePlayerButtonActions(primaryStage, nameTextField, btnLong, btnShort, cBox, errorAction, cmb);
 	}
 
 	private ComboBox<Color> addCarColorComboBox(GridPane entryGrid)
@@ -357,29 +452,31 @@ public class Main extends Application
         return cmb;
 	}
 
-	private void setButtonActions(Stage primaryStage, RestrictiveTextField nameTextField, Button btnLong, Button btnShort, CheckBox cBox, 
+	private void setSinglePlayerButtonActions(Stage primaryStage, RestrictiveTextField nameTextField, Button btnLong, Button btnShort, CheckBox cBox, 
 			final Text errorAction, ComboBox<Color> cmb)
 	{
 		btnLong.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e)
 			{			
 				longGame = true;								
-				initialiseGame(primaryStage, nameTextField, cBox, errorAction, cmb);
+				initialiseSinglePlayerGame(primaryStage, nameTextField, cBox, errorAction, cmb);
 			}
 		});
 		
 		btnShort.setOnAction(new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent e)
 			{
-				initialiseGame(primaryStage, nameTextField, cBox, errorAction, cmb);
+				initialiseSinglePlayerGame(primaryStage, nameTextField, cBox, errorAction, cmb);
 			}
 		});
 	}
 	
-	private void initialiseGame(Stage primaryStage, RestrictiveTextField nameTextField, CheckBox cBox, final Text errorAction, ComboBox<Color> cmb)
+	private void initialiseSinglePlayerGame(Stage primaryStage, RestrictiveTextField nameTextField, CheckBox cBox, final Text errorAction, ComboBox<Color> cmb)
 	{
 		errorAction.setText("");
 		errorAction.setFill(Color.FIREBRICK);
+		
+		playerOne = new Player();
 		
 		String name = nameTextField.getText();
 		if (!checkNameEntered(errorAction, name))
@@ -387,9 +484,9 @@ public class Main extends Application
 			return;
 		}
 		
-		useAlternateControls = cBox.isSelected();
-		colorSelected = cmb.getValue();
-		if (colorSelected == null)
+		playerOne.setUseAlternateControls(cBox.isSelected());
+		playerOne.setCarColor(cmb.getValue());
+		if (playerOne.getCarColor() == null)
 		{
 			errorAction.setText("You must select a colour for you car!");
 			return;
@@ -397,12 +494,38 @@ public class Main extends Application
 		
 		if (testMode)
 		{
-			playerOneName = "Test subject";
+			playerOne.setName("Test subject");
 		}
 		else
 		{
-			playerOneName = name;
+			playerOne.setName(name);
 		}
+		
+		startGame(primaryStage);
+	}	
+
+	private void initialiseMultiPlayerGame(Stage primaryStage, RestrictiveTextField nameOneTextField, RestrictiveTextField nameTwoTextField, Text errorAction)
+	{
+		errorAction.setText("");
+		errorAction.setFill(Color.FIREBRICK);
+		
+		playerOne = new Player();
+		playerTwo = new Player();
+		
+		String nameOne = nameOneTextField.getText();
+		String nameTwo = nameTwoTextField.getText();
+		
+		if (nameOne.isEmpty() || nameTwo.isEmpty())
+		{
+			return;
+		}
+		
+		playerOne.setUseAlternateControls(true);
+		playerOne.setCarColor(CAR_YELLOW);
+		playerTwo.setCarColor(CAR_BLUE);
+		
+		playerOne.setName(nameOne);
+		playerTwo.setName(nameTwo);
 		
 		startGame(primaryStage);
 	}
@@ -424,59 +547,88 @@ public class Main extends Application
 
 	private void handleKeyReleased(KeyEvent event)
 	{
-		if (event.getCode() == KeyCode.UP && !useAlternateControls
-		  || event.getCode() == KeyCode.W && useAlternateControls)  
+		for (int i=0; i<cars.size(); i++)
 		{
-			verticalEnabled = false;
-		}
-		else if ((event.getCode() == KeyCode.RIGHT && !useAlternateControls || event.getCode() == KeyCode.D && useAlternateControls)
-		  || (event.getCode() == KeyCode.LEFT && !useAlternateControls || event.getCode() == KeyCode.A && useAlternateControls))
-		{
-			rotationEnabled = false;
-			rotMove = 0;
+			Car car = cars.elementAt(i);
+			Player player = car.getPlayer();
+			boolean useAlternateControls = player.getUseAlternateControls();
+			if (event.getCode() == KeyCode.UP && !useAlternateControls
+					|| event.getCode() == KeyCode.W && useAlternateControls)  
+			{
+				car.setVerticalEnabled(false);
+			}
+			else if ((event.getCode() == KeyCode.RIGHT && !useAlternateControls || event.getCode() == KeyCode.D && useAlternateControls)
+					|| (event.getCode() == KeyCode.LEFT && !useAlternateControls || event.getCode() == KeyCode.A && useAlternateControls))
+			{
+				car.setRotationEnabled(false);
+				car.setRotMove(0);
+			}
 		}
 	}
 	
 	private void handleKeyPressed(KeyEvent event)
 	{
-		if (event.getCode() == KeyCode.UP && !useAlternateControls
-		  || event.getCode() == KeyCode.W && useAlternateControls) 
+		for (int i=0; i<cars.size(); i++)
 		{
-			verticalEnabled = true;
-		}
-		else if (event.getCode() == KeyCode.RIGHT && !useAlternateControls
-		  || event.getCode() == KeyCode.D && useAlternateControls)
-		{
-			rotationEnabled = true;
-			rotMove = 5; 						
-		}
-		else if (event.getCode() == KeyCode.LEFT && !useAlternateControls
-		  || event.getCode() == KeyCode.A && useAlternateControls)
-		{
-			rotationEnabled = true;
-			rotMove = -5;
+			Car car = cars.elementAt(i);
+			Player player = car.getPlayer();
+			boolean useAlternateControls = player.getUseAlternateControls();
+			if (event.getCode() == KeyCode.UP && !useAlternateControls
+					|| event.getCode() == KeyCode.W && useAlternateControls) 
+			{
+				car.setVerticalEnabled(true);
+			}
+			else if (event.getCode() == KeyCode.RIGHT && !useAlternateControls
+					|| event.getCode() == KeyCode.D && useAlternateControls)
+			{
+				car.setRotationEnabled(true);
+				car.setRotMove(5);						
+			}
+			else if (event.getCode() == KeyCode.LEFT && !useAlternateControls
+					|| event.getCode() == KeyCode.A && useAlternateControls)
+			{
+				car.setRotationEnabled(true);
+				car.setRotMove(-5);
+			}
 		}
 	}
 
 	private void createSprites()
 	{
-		Image carImage = null;
-		if (colorSelected.equals(CAR_YELLOW))
+		sprites = new SpriteHandler();
+		cars = new Vector<Car>();
+		if (singlePlayer)
 		{
-			carImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
+			Image carImage = null;
+			if (playerOne.getCarColor().equals(CAR_YELLOW))
+			{
+				carImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
+			}
+			else
+			{
+				carImage = new Image(this.getClass().getResource("CarPixlrBlue.png").toString());
+			}			
+			Car car = new Car(carImage, 147.5, 650, 0, playerOne);			
+			sprites.add(car);
+			cars.add(car);
 		}
 		else
 		{
-			carImage = new Image(this.getClass().getResource("CarPixlrBlue.png").toString());
+			Image carOneImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
+			Image carTwoImage = new Image(this.getClass().getResource("CarPixlrBlue.png").toString());
+			Car carOne = new Car(carOneImage, Road.WIDTH/3, 650, 0, playerOne);
+			Car carTwo = new Car(carTwoImage, 2*Road.WIDTH/3, 650, 0, playerTwo);
+			
+			sprites.add(carOne);
+			sprites.add(carTwo);
+			cars.add(carOne);
+			cars.add(carTwo);
 		}
+		
 		Image roadImage = new Image(this.getClass().getResource("Road.png").toString());
 		Image wallImage = new Image(this.getClass().getResource("Wall.png").toString());
 		Image finishLineImage = new Image(this.getClass().getResource("FinishLine.png").toString());
-		car = new Car(carImage, 147.5, 650, 0);
-		
-		sprites = new SpriteHandler();
-		sprites.add(car);
-		
+				
 		//Remember that anything that you want to add here also has to be added to the method that draws the components
 		addRoads(roadImage);		
 		addWalls(wallImage);		
@@ -522,10 +674,10 @@ public class Main extends Application
 		}
 	}
 	
-	private void scrollScreen()
+	private void scrollScreen(Car car)
 	{
-		sprites.scrollSprites(yMove);
-		isCarCloseToTop = false;
+		sprites.scrollSprites(car);
+		car.setCarCloseToTop(false);
 		drawGame();
 	}
 	
@@ -571,22 +723,60 @@ public class Main extends Application
 		
 		gc.clearRect(0, 0, width, height);
 		drawSprites(gc);
+		
+		render(gc);
+	}
+
+	//Could do this as a for loop with a vector of cars
+	private void render(GraphicsContext gc)
+	{
 		if (gameWon)
 		{
-			Label winnerText = new Label(playerOneName + " is the winner!");
-			winnerText.setId("winner-text");
-			topBar.add(winnerText, 0, 1, 2, 1);
+			for (int i=0; i<cars.size(); i++)
+			{
+				Car car = cars.elementAt(i);
+				if (car.getWinner())
+				{
+					Label winnerText = new Label(car.getPlayer().getName() + " is the winner!");
+					winnerText.setId("winner-text");	
+					topBar.add(winnerText, 0, 1, 2, 1);
+				}
+			}
 		}
 		
-		double x = car.getPosX() + xMove;
-		double y = car.getPosY() - yMove;
-		
+		for (int i=0; i<cars.size(); i++)
+		{
+			Car car = cars.elementAt(i);
+			double x = car.getPosX() + car.getXMove();
+			double y = car.getPosY() + car.getYMove();
+			
+			drawCarWithRotation(gc, x, y, car);
+		}
+	}
+
+//	private void renderSinglePlayer(GraphicsContext gc)
+//	{
+//		if (gameWon)
+//		{
+//			Label winnerText = new Label(playerOne.getName() + " is the winner!");
+//			winnerText.setId("winner-text");
+//			topBar.add(winnerText, 0, 1, 2, 1);
+//		}
+//
+//		double x = car.getPosX() + car.getXMove();
+//		double y = car.getPosY() - car.getYMove();
+//
+//		drawCarWithRotation(gc, x, y, car);
+//	}
+
+	private void drawCarWithRotation(GraphicsContext gc, double x, double y, Car car)
+	{
 		gc.save();
 		gc.translate(x + (Car.WIDTH)/2, y + (Car.HEIGHT)/2);
 		gc.rotate(car.getRotation());
-		
+
 		gc.drawImage(car.getImage(), -(Car.WIDTH)/2, -(Car.HEIGHT)/2);
-		
+
 		gc.restore();
 	}
 	
@@ -597,34 +787,43 @@ public class Main extends Application
 	
 	private void updatePosition()
 	{
-		if (verticalEnabled)
+		for (int i=0; i<cars.size(); i++)
 		{
-			updateVerticalPosition(true);
-		}
-		
-		if (rotationEnabled)
-		{
-			updateRotation();
-		}
-		
-		boolean inMotion = yMove > 0 || yMove < 0 || xMove < 0 || xMove > 0;
-		if (!verticalEnabled && inMotion)
-		{
-			calculateYMovement();
-			calculateXMovement();
-			
-			car.setXMove(xMove);
-			car.setYMove(yMove);
-			
-			updateVerticalPosition(false);
+			Car car = cars.elementAt(i);
+			boolean verticalEnabled = car.getVerticalEnabled();
+			boolean rotationEnabled = car.getRotationEnabled();
+			if (verticalEnabled)
+			{
+				updateVerticalPosition(true, car);
+			}
+
+			if (rotationEnabled)
+			{
+				updateRotation(car);
+			}
+
+			double xMove = car.getXMove();
+			double yMove = car.getYMove();
+			boolean inMotion = yMove > 0 || yMove < 0 || xMove < 0 || xMove > 0;
+			if (!verticalEnabled && inMotion)
+			{
+				yMove = calculateYMovement(car);
+				xMove = calculateXMovement(car);
+
+				car.setXMove(xMove);
+				car.setYMove(yMove);
+
+				updateVerticalPosition(false, car);
+			}
 		}
 		
 		drawGame();
 	}
 
-	private void calculateYMovement()
+	private double calculateYMovement(Car car)
 	{
 		double newYMove;
+		double yMove = car.getYMove();
 		if (yMove > 0)
 		{
 			newYMove = yMove-0.25;
@@ -649,11 +848,14 @@ public class Main extends Application
 				yMove = 0;
 			}
 		}
+		
+		return yMove;
 	}
 	
-	private void calculateXMovement()
+	private double calculateXMovement(Car car)
 	{
 		double newXMove;
+		double xMove = car.getXMove();
 		if (xMove > 0)
 		{
 			newXMove = xMove-0.25;
@@ -678,20 +880,24 @@ public class Main extends Application
 				xMove = 0;
 			}
 		}
+		
+		return xMove;
 	}
 
-	private void updateRotation()
+	private void updateRotation(Car car)
 	{
 		double oldRot = car.getRotation();
-		double newRot = oldRot + rotMove;
+		double newRot = oldRot + car.getRotMove();
 		car.setRotation(newRot);
 	}
 
-	private void updateVerticalPosition(boolean accelerating)
+	private void updateVerticalPosition(boolean accelerating, Car car)
 	{
 		double rotation = car.getRotation();
 		double rotationRadians = Math.toRadians(rotation);
 		
+		double xMove = car.getXMove();
+		double yMove = car.getYMove();
 		if (accelerating)
 		{
 			yMove = MOVEMENT_AMOUNT*Math.cos(rotationRadians);
@@ -706,7 +912,7 @@ public class Main extends Application
 		car.setXMove(xMove);
 		
 		boolean collision = sprites.resolveCollisions();
-
+		
 		double oldY = car.getPosY();
 		double newY = oldY - yMove;
 		double oldX = car.getPosX();
@@ -717,6 +923,7 @@ public class Main extends Application
 			if (newY > 0 && newY < gameCanvas.getHeight() - Car.HEIGHT)
 			{
 				car.setPosY(newY);
+				car.updateProgressBar();
 			}
 			if (newX > 0 && newX < gameCanvas.getWidth() - Car.HEIGHT)
 			{
@@ -726,10 +933,10 @@ public class Main extends Application
 		
 		if (newY < TOP_BUFFER)
 		{
-			isCarCloseToTop = true;
-		}		
+			car.setCarCloseToTop(true);
+		}
 	}
-	
+
 	public static int getRoadNumberCoefficient()
 	{
 		return roadNumberCoefficient;
@@ -742,16 +949,16 @@ public class Main extends Application
 	{
 		gameWon = true;
 	}	
-	public static ProgressIndicator getProgressIndicator()
-	{
-		return bar;
-	}
-	public static void setProgressBar(double progress)
-	{
-		bar.setProgress(progress);
-	}
 	public static double getTrackEnd()
 	{
 		return trackEnd;
+	}
+	public static void setTrackEnd(double value)
+	{
+		trackEnd = value + TOP_BUFFER/2;
+	}
+	public static double getTrackDistance()
+	{
+		return trackDistance;
 	}
 }
