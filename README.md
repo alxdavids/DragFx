@@ -30,6 +30,7 @@ To-do list
 	- ~~Add something to entry screen to allow you to pick~~
 	- More car colours?
 - Leaderboard
+- Sound effects for collisions engines etc.
 
 
 (Much Later)

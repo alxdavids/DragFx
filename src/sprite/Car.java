@@ -1,6 +1,7 @@
 package sprite;
 
 import javafx.scene.Group;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import utils.UpwardProgress;
@@ -11,6 +12,8 @@ public class Car extends Sprite
 {
 	public final static double WIDTH = 30;
 	public final static double HEIGHT = 37;
+	public final static double GAME_CANVAS_WIDTH = 305;
+	public final static double GAME_CANVAS_HEIGHT = 692;
 	
 	private double rotation;
 	private double xMove = 0;
@@ -22,6 +25,12 @@ public class Car extends Sprite
 	private ProgressIndicator bar = null;
 	private Player player = null;
 	private boolean winner = false;
+	private Canvas gameCanvas = new Canvas(GAME_CANVAS_WIDTH,GAME_CANVAS_HEIGHT);
+	private boolean collisionHappened = false;
+	private double trackDisposition = 0;
+	private double carModifier = 0;
+	private double spriteModifier = 0;
+	private SpriteHandler sprites = null;
 	
 	public Car(Image image, double posX, double posY, double rotation, Player player)
 	{
@@ -100,6 +109,15 @@ public class Car extends Sprite
 		this.rotationEnabled = rotationEnabled;
 	}
 	
+	public Canvas getGameCanvas()
+	{
+		return gameCanvas;
+	}
+	public void setGameCanvas(Canvas gameCanvas)
+	{
+		this.gameCanvas = gameCanvas;
+	}
+	
 	public boolean getCarCloseToTop()
 	{
 		return carCloseToTop;
@@ -119,7 +137,7 @@ public class Car extends Sprite
 	}
 	public void updateProgressBar()
 	{
-		setProgressBar(1 - (posY - Main.getTrackEnd())/Main.getTrackDistance());
+		setProgressBar(1 - (posY - sprites.getTrackEnd())/Main.getTrackDistance());
 	}
 	
 	public Player getPlayer()
@@ -138,5 +156,47 @@ public class Car extends Sprite
 	public void setWinner(boolean winner)
 	{
 		this.winner = winner;
+	}
+	
+	public boolean getCollisionHappened()
+	{
+		return collisionHappened;
+	}
+	public void setCollisionHappened(boolean collisionHappened)
+	{
+		this.collisionHappened = collisionHappened;
+	}
+
+	public double getTrackDisposition()
+	{
+		return trackDisposition;
+	}
+	public void setTrackDisposition(double highestY)
+	{
+		this.trackDisposition = highestY + Road.HEIGHT - GAME_CANVAS_HEIGHT; // We add the height of a road here as this is the lowest point of the track
+	}
+	public double getCarModifier()
+	{
+		return carModifier;
+	}
+	public void setCarModifier(double carModifier)
+	{
+		this.carModifier = carModifier;
+	}
+	public double getSpriteModifier()
+	{
+		return spriteModifier;
+	}
+	public void setSpriteModifier(double spriteModifier)
+	{
+		this.spriteModifier = spriteModifier;
+	}
+	public SpriteHandler getSprites()
+	{
+		return sprites;
+	}
+	public void setSprites(SpriteHandler sprites)
+	{
+		this.sprites = sprites;
 	}
 }

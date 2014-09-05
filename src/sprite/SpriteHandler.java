@@ -7,14 +7,26 @@ import application.Main;
 public class SpriteHandler extends Vector<Sprite>
 {
 	private static final long serialVersionUID = 1L;
+	private double trackEnd = 0;
 	
-	public SpriteHandler()
+	public SpriteHandler(int roadNumberCoefficient)
 	{
+		this.trackEnd = (roadNumberCoefficient+1)*Road.HEIGHT + Main.TOP_BUFFER;
+	}
+	
+	public double getTrackEnd()
+	{
+		return trackEnd;
+	}
+	public void setTrackEnd(double value)
+	{
+		this.trackEnd = value + Main.TOP_BUFFER/2;
 	}
 	
 	public void scrollSprites(Car car)
 	{
 		double lowestY = 0;
+		double highestY = 0;
 		double yMove = car.getYMove();
 		for (int i=0; i<this.size(); i++)
 		{
@@ -26,9 +38,14 @@ public class SpriteHandler extends Vector<Sprite>
 			{
 				lowestY = newY;
 			}
+			if (newY > highestY)
+			{
+				highestY = newY;
+			}
 		}
 		
-		Main.setTrackEnd(lowestY);
+		setTrackEnd(lowestY);
+		car.setTrackDisposition(highestY);
 	}
 
 	/**
@@ -92,16 +109,15 @@ public class SpriteHandler extends Vector<Sprite>
 	/**
 	 * Resolve collisions
 	 */
-	public boolean resolveCollisions()
+	public void resolveCollisions()
 	{
-		boolean collisionHappened = false;
-
 		for (int j=0; j<2; j++)
 		{
 			Sprite carSprite = this.elementAt(j);
 			if (carSprite instanceof Car)
 			{	
 				Car car = (Car) carSprite;
+				car.setCollisionHappened(false);
 				double carX = car.getPosX();
 				double carY = car.getPosY();
 				double carXMove = car.getXMove();
@@ -147,7 +163,7 @@ public class SpriteHandler extends Vector<Sprite>
 								car.setYMove(-carYMove);
 								car.setXMove(-carXMove);
 
-								collisionHappened = true;
+								car.setCollisionHappened(true);
 							}
 						}
 					}
@@ -165,7 +181,5 @@ public class SpriteHandler extends Vector<Sprite>
 				}
 			}
 		}
-		
-		return collisionHappened;
 	}
 }

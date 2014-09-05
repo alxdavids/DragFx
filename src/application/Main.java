@@ -55,24 +55,23 @@ public class Main extends Application
 	public static final Color CAR_BLUE = Color.web(CAR_BLUE_HTML);
 	private static final double TIME_GAP = 0.1;
 	
-	private SpriteHandler sprites = null;
-	private Canvas gameCanvas = new Canvas(305,692);
-
 	private AnimationTimer animTimer;
 	private boolean endOfTrack = false;
 	private boolean longGame = false;
 	private static boolean gameWon = false;
 	private boolean testMode = false;
-	private static double trackEnd = 0;
 	private double time = 0;
 	private Timeline timer = null;
 	private GridPane topBar = null;
 	private Vector<Car> cars = null;
+	private double trackDispTwoPrev = 0;
 	
 	private static boolean singlePlayer = true;
 	
 	private Player playerOne = null;
 	private Player playerTwo = null;
+	
+	private double trackDispLargest = 0;
 	
 	private static int roadNumberCoefficient = 1; //1 builds zero roads. Decrease to build more rows (see createCarAndRoads())
 	private static double trackDistance = 0;
@@ -175,23 +174,22 @@ public class Main extends Application
 		if (!singlePlayer)
 		{
 			players.add(playerTwo);
-		}
+		}		
+				
+		setRoadNumberCoefficient();
+		
+		createSprites();
 		
 		topBar = new GridPane(); 
 		topBar.setId("top-bar");
 		topBar.setPadding(new Insets(5, 5, 5, 5));
-		topBar.setPrefSize(gameCanvas.getWidth(), 50);
+		topBar.setPrefSize(Car.GAME_CANVAS_WIDTH, 50);
 		
 		Label timerText = new Label();
 		timerText.setId("timer-text");
 		topBar.add(timerText, 0, 0);
-				
-		setRoadNumberCoefficient();
-		trackEnd = (roadNumberCoefficient+1)*Road.HEIGHT + TOP_BUFFER;
-		
-		createSprites();
-		drawGame();
-		
+						
+		HBox canvasHBox = new HBox();
 		Vector<Group> progressBars = new Vector<Group>();
 		for (int i=0; i<cars.size(); i++)
 		{
@@ -199,19 +197,18 @@ public class Main extends Application
 			Group progressBar = car.initProgressBar();
 			progressBars.add(progressBar);
 			initProgressBar(car);
+			canvasHBox.getChildren().add(car.getGameCanvas());
+			drawGame(car);
 		}	
 		
-		HBox hBox = null;
-		if (singlePlayer)
+		HBox hBox = new HBox();
+		for (int i=0; i<progressBars.size(); i++)
 		{
-			hBox = new HBox(progressBars.elementAt(0));
-		}
-		else
-		{
-			hBox = new HBox(progressBars.elementAt(0), progressBars.elementAt(1));
+			Group progressBar = progressBars.elementAt(i);
+			hBox.getChildren().add(progressBar);
 		}
 		
-		Scene gameScene = new Scene(new VBox(topBar, new HBox(gameCanvas, hBox)));	
+		Scene gameScene = new Scene(new VBox(topBar, new HBox(canvasHBox, hBox)));	
 		gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 				
 		gameScene.setOnKeyPressed(new EventHandler<KeyEvent>() 
@@ -249,6 +246,39 @@ public class Main extends Application
 		{
 			public void handle(long arg0) 
 			{
+				/*if (!singlePlayer)
+				{
+					Car carOne = cars.elementAt(0);
+					Car carTwo = cars.elementAt(1);
+					
+					double trackDispOne = carOne.getTrackDisposition();
+					double trackDispTwo = carTwo.getTrackDisposition();
+
+					if (trackDispTwo > 0 && trackDispTwo > trackDispTwoPrev + 1)
+					{
+						System.out.println("trackDispOne = " + trackDispOne);
+						System.out.println("trackDispTwo = " + trackDispTwo);
+						System.out.println("sprOne = " + carOne.getSpriteModifier());
+						System.out.println("carMOne = " + carOne.getCarModifier());
+						System.out.println("sprTwo = " + carTwo.getSpriteModifier());
+						System.out.println("carMTwo = " + carTwo.getCarModifier());
+						System.out.println("carOneY = " + carOne.getPosY());
+						System.out.println("carTwoY = " + carTwo.getPosY());
+						
+						trackDispTwoPrev = trackDispTwo;
+					}
+					
+					if (trackDispOne > trackDispTwo)
+					{
+						modifyTrackPositions(carOne, trackDispOne, carTwo, trackDispTwo);
+						trackDispLargest = trackDispOne;
+					}
+					else if (trackDispTwo > trackDispOne)
+					{
+						modifyTrackPositions(carTwo, trackDispTwo, carOne, trackDispOne);
+						trackDispLargest = trackDispTwo;
+					}
+				}*/
 				update(gameScene);
 			}			
 		};
@@ -256,10 +286,19 @@ public class Main extends Application
 		animTimer.start();
 	}
 
+	/*private void modifyTrackPositions(Car carWithGreaterTrackDisposition, double trackDispGreater, 
+							Car carWithLessTrackDisposition, double trackDispLesser)
+	{
+		carWithGreaterTrackDisposition.setCarModifier(trackDispGreater - trackDispLesser);
+		carWithGreaterTrackDisposition.setSpriteModifier(0);
+		carWithLessTrackDisposition.setCarModifier(-(trackDispGreater - trackDispLesser));
+		carWithLessTrackDisposition.setSpriteModifier(-(trackDispGreater - trackDispLesser));
+	}*/
+
 	private void initProgressBar(Car car)
 	{
 		double carY = car.getPosY();
-		trackDistance = carY-trackEnd;
+		trackDistance = carY-car.getSprites().getTrackEnd();
 		car.updateProgressBar();
 	}
 
@@ -273,7 +312,7 @@ public class Main extends Application
 				Car car = cars.elementAt(i);
 				if (car.getCarCloseToTop() && !endOfTrack)
 				{
-					scrollScreen(car);
+					scrollScreen(car, car.getSprites());
 					break;
 				}
 			}
@@ -595,7 +634,8 @@ public class Main extends Application
 
 	private void createSprites()
 	{
-		sprites = new SpriteHandler();
+		SpriteHandler sprites = new SpriteHandler(roadNumberCoefficient);
+		SpriteHandler spritesCopy = null;
 		cars = new Vector<Car>();
 		if (singlePlayer)
 		{
@@ -615,14 +655,10 @@ public class Main extends Application
 		else
 		{
 			Image carOneImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
-			Image carTwoImage = new Image(this.getClass().getResource("CarPixlrBlue.png").toString());
-			Car carOne = new Car(carOneImage, Road.WIDTH/3, 650, 0, playerOne);
-			Car carTwo = new Car(carTwoImage, 2*Road.WIDTH/3, 650, 0, playerTwo);
+			Car carOne = new Car(carOneImage, 147.5, 650, 0, playerOne);
 			
 			sprites.add(carOne);
-			sprites.add(carTwo);
 			cars.add(carOne);
-			cars.add(carTwo);
 		}
 		
 		Image roadImage = new Image(this.getClass().getResource("Road.png").toString());
@@ -630,19 +666,61 @@ public class Main extends Application
 		Image finishLineImage = new Image(this.getClass().getResource("FinishLine.png").toString());
 				
 		//Remember that anything that you want to add here also has to be added to the method that draws the components
-		addRoads(roadImage);		
-		addWalls(wallImage);		
-		checkWallsArePlacedCorrectly();
-		addFinishLine(finishLineImage);
+		addRoads(roadImage, sprites);		
+		addWalls(wallImage, sprites);		
+		checkWallsArePlacedCorrectly(sprites);
+		addFinishLine(finishLineImage, sprites);
+
+		Car car = cars.elementAt(0);
+		car.setSprites(sprites);
+		
+		if (!singlePlayer)
+		{
+			spritesCopy = createSpritesVectorCopy(sprites);
+			Car carTwo = (Car) spritesCopy.elementAt(0);
+			cars.add(carTwo);
+			carTwo.setSprites(spritesCopy);
+		}				
 	}
 
-	private void addFinishLine(Image finishLineImage)
+	private SpriteHandler createSpritesVectorCopy(SpriteHandler sprites)
+	{
+		SpriteHandler spritesCopy = new SpriteHandler(roadNumberCoefficient);
+		for (int i=0; i<sprites.size(); i++)
+		{
+			Sprite sprite = sprites.elementAt(i);
+			if (sprite instanceof Car)
+			{				
+				Car car = new Car(new Image(this.getClass().getResource("CarPixlrBlue.png").toString()), 
+								sprite.getPosX(), sprite.getPosY(), ((Car) sprite).getRotation(), playerTwo);
+				spritesCopy.add(car);
+			}
+			else if (sprite instanceof Road)
+			{
+				Road road = new Road(sprite.getPosX(), sprite.getPosY(), sprite.getImage());
+				spritesCopy.add(road);
+			}
+			else if (sprite instanceof Wall)
+			{
+				Wall wall = new Wall(sprite.getPosX(), sprite.getPosY(), sprite.getImage());
+				spritesCopy.add(wall);
+			}
+			else if (sprite instanceof FinishLine)
+			{
+				FinishLine fl = new FinishLine(sprite.getPosX(), sprite.getPosY(), sprite.getImage());
+				spritesCopy.add(fl);
+			}
+		}
+		return spritesCopy;
+	}
+
+	private void addFinishLine(Image finishLineImage, SpriteHandler sprites)
 	{
 		FinishLine finishLine = new FinishLine(0, (roadNumberCoefficient+1)*Road.HEIGHT + Car.HEIGHT, finishLineImage);
 		sprites.add(finishLine);
 	}
 
-	private void checkWallsArePlacedCorrectly()
+	private void checkWallsArePlacedCorrectly(SpriteHandler sprites)
 	{
 		boolean wallsInValidPositions = false;
 		while (!wallsInValidPositions)
@@ -651,7 +729,7 @@ public class Main extends Application
 		}
 	}
 
-	private void addRoads(Image roadImage)
+	private void addRoads(Image roadImage, SpriteHandler sprites)
 	{
 		for (int i=1; i>roadNumberCoefficient; i--)
 		{
@@ -660,7 +738,7 @@ public class Main extends Application
 		}
 	}
 
-	private void addWalls(Image wallImage)
+	private void addWalls(Image wallImage, SpriteHandler sprites)
 	{
 		int numberOfWalls = (Math.abs(roadNumberCoefficient) + 2)*2;
 		
@@ -674,25 +752,26 @@ public class Main extends Application
 		}
 	}
 	
-	private void scrollScreen(Car car)
+	private void scrollScreen(Car car, SpriteHandler sprites)
 	{
 		sprites.scrollSprites(car);
 		car.setCarCloseToTop(false);
-		drawGame();
 	}
 	
-	private void drawSprites(GraphicsContext gc)
+	private void drawSprites(GraphicsContext gc, Car car)
 	{	
 		boolean reachedEndOfTrack = true;
+		SpriteHandler sprites = car.getSprites();
 		int size = sprites.size();
+		double spriteMod = car.getSpriteModifier();
 		for (int i=0; i<size; i++)
 		{
 			Sprite sprite = sprites.elementAt(i);
 			if (sprite instanceof Road)
 			{
 				Road road = (Road) sprite;
-				gc.drawImage(road.getImage(), road.getPosX(), road.getPosY());				
-				if (road.getPosY() < 0)
+				gc.drawImage(road.getImage(), road.getPosX(), road.getPosY() + spriteMod);				
+				if (road.getPosY() + spriteMod < 0)
 				{
 					reachedEndOfTrack = false;
 				}
@@ -704,7 +783,7 @@ public class Main extends Application
 			if (!(sprite instanceof Road)
 			  && !(sprite instanceof Car))
 			{
-				gc.drawImage(sprite.getImage(), sprite.getPosX(), sprite.getPosY());
+				gc.drawImage(sprite.getImage(), sprite.getPosX(), sprite.getPosY() + spriteMod);
 			}
 		}
 		
@@ -714,60 +793,40 @@ public class Main extends Application
 		}
 	}
 
-	private void drawGame()
+	private void drawGame(Car car)
 	{
+		Canvas gameCanvas = car.getGameCanvas();
 		GraphicsContext gc = gameCanvas.getGraphicsContext2D();
 		
 		double width = gameCanvas.getWidth();
 		double height = gameCanvas.getHeight();
 		
 		gc.clearRect(0, 0, width, height);
-		drawSprites(gc);
+		drawSprites(gc, car);
 		
-		render(gc);
+		render(gc, car);
 	}
 
-	//Could do this as a for loop with a vector of cars
-	private void render(GraphicsContext gc)
+	private void render(GraphicsContext gc, Car car)
 	{
 		if (gameWon)
 		{
 			for (int i=0; i<cars.size(); i++)
 			{
-				Car car = cars.elementAt(i);
-				if (car.getWinner())
+				Car checkCar = cars.elementAt(i);
+				if (checkCar.getWinner())
 				{
-					Label winnerText = new Label(car.getPlayer().getName() + " is the winner!");
+					Label winnerText = new Label(checkCar.getPlayer().getName() + " is the winner!");
 					winnerText.setId("winner-text");	
 					topBar.add(winnerText, 0, 1, 2, 1);
 				}
 			}
 		}
-		
-		for (int i=0; i<cars.size(); i++)
-		{
-			Car car = cars.elementAt(i);
-			double x = car.getPosX() + car.getXMove();
-			double y = car.getPosY() + car.getYMove();
-			
-			drawCarWithRotation(gc, x, y, car);
-		}
-	}
 
-//	private void renderSinglePlayer(GraphicsContext gc)
-//	{
-//		if (gameWon)
-//		{
-//			Label winnerText = new Label(playerOne.getName() + " is the winner!");
-//			winnerText.setId("winner-text");
-//			topBar.add(winnerText, 0, 1, 2, 1);
-//		}
-//
-//		double x = car.getPosX() + car.getXMove();
-//		double y = car.getPosY() - car.getYMove();
-//
-//		drawCarWithRotation(gc, x, y, car);
-//	}
+		double x = car.getPosX() + car.getXMove();
+		double y = car.getPosY() + car.getYMove();
+		drawCarWithRotation(gc, x, y, car);
+	}
 
 	private void drawCarWithRotation(GraphicsContext gc, double x, double y, Car car)
 	{
@@ -815,9 +874,9 @@ public class Main extends Application
 
 				updateVerticalPosition(false, car);
 			}
-		}
-		
-		drawGame();
+			
+			drawGame(car);
+		}		
 	}
 
 	private double calculateYMovement(Car car)
@@ -911,27 +970,29 @@ public class Main extends Application
 		car.setYMove(yMove);
 		car.setXMove(xMove);
 		
-		boolean collision = sprites.resolveCollisions();
+		SpriteHandler sprites = car.getSprites();
+		sprites.resolveCollisions();
 		
 		double oldY = car.getPosY();
 		double newY = oldY - yMove;
 		double oldX = car.getPosX();
 		double newX = oldX + xMove;
 		
-		if (!collision)
+		if (!car.getCollisionHappened())
 		{
-			if (newY > 0 && newY < gameCanvas.getHeight() - Car.HEIGHT)
+			if (newY > 0)
 			{
 				car.setPosY(newY);
 				car.updateProgressBar();
 			}
-			if (newX > 0 && newX < gameCanvas.getWidth() - Car.HEIGHT)
+			if (newX > 0 && newX < Car.GAME_CANVAS_WIDTH - Car.HEIGHT)
 			{
 				car.setPosX(newX);
 			}
 		}
 		
 		if (newY < TOP_BUFFER)
+//		  || !singlePlayer && car.getTrackDisposition() < trackDispLargest && newY < TOP_BUFFER + trackDispLargest - car.getTrackDisposition())
 		{
 			car.setCarCloseToTop(true);
 		}
@@ -949,14 +1010,6 @@ public class Main extends Application
 	{
 		gameWon = true;
 	}	
-	public static double getTrackEnd()
-	{
-		return trackEnd;
-	}
-	public static void setTrackEnd(double value)
-	{
-		trackEnd = value + TOP_BUFFER/2;
-	}
 	public static double getTrackDistance()
 	{
 		return trackDistance;
