@@ -575,7 +575,8 @@ public class Main extends Application
 				    String scoreString = line.substring(indexOfScore+1, indexOfTypeStart-1);
 				    String scoreTrimmed = scoreString.trim();
 				    double timeToCheck = Double.parseDouble(scoreTrimmed);
-				    if (time < timeToCheck)
+				    if (time < timeToCheck
+				      && !lineAdded)
 				    {
 				    	addNewTime(time, lines);
 				    	lineAdded = true;
