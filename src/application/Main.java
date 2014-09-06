@@ -64,14 +64,11 @@ public class Main extends Application
 	private Timeline timer = null;
 	private GridPane topBar = null;
 	private Vector<Car> cars = null;
-	private double trackDispTwoPrev = 0;
 	
 	private static boolean singlePlayer = true;
 	
 	private Player playerOne = null;
 	private Player playerTwo = null;
-	
-	private double trackDispLargest = 0;
 	
 	private static int roadNumberCoefficient = 1; //1 builds zero roads. Decrease to build more rows (see createCarAndRoads())
 	private static double trackDistance = 0;
@@ -313,7 +310,6 @@ public class Main extends Application
 				if (car.getCarCloseToTop() && !endOfTrack)
 				{
 					scrollScreen(car, car.getSprites());
-					break;
 				}
 			}
 		}
@@ -389,8 +385,12 @@ public class Main extends Application
 		hbBtnShort.getChildren().add(btnShort);
 		entryGrid.add(hbBtnShort, 0, 3);
 		
+		final Text playerInstruction = new Text();
+		playerInstruction.setText("Player one uses WAD controls.");
+		entryGrid.add(playerInstruction, 0, 4, 2, 1);		
+		
 		final Text errorAction = new Text();
-        entryGrid.add(errorAction, 0, 4, 2, 1);
+        entryGrid.add(errorAction, 0, 5, 2, 1);
 		
         setMultiPlayerButtonActions(primaryStage, nameOneTextField, nameTwoTextField, btnLong, btnShort, errorAction);
 	}
@@ -556,6 +556,12 @@ public class Main extends Application
 		
 		if (nameOne.isEmpty() || nameTwo.isEmpty())
 		{
+			errorAction.setText("A player has not entered a name");
+			return;
+		}
+		else if (nameOne.equals(nameTwo))
+		{
+			errorAction.setText("Players must have different names");
 			return;
 		}
 		
@@ -992,7 +998,6 @@ public class Main extends Application
 		}
 		
 		if (newY < TOP_BUFFER)
-//		  || !singlePlayer && car.getTrackDisposition() < trackDispLargest && newY < TOP_BUFFER + trackDispLargest - car.getTrackDisposition())
 		{
 			car.setCarCloseToTop(true);
 		}
