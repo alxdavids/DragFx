@@ -172,12 +172,10 @@ public class Main extends Application
 		hbBtnSingle.getChildren().add(btnSinglePlayer);
 		
 		Button btnMultiPlayer = new Button("Multiplayer Game");
-		btnMultiPlayer.setDefaultButton(true);
 		HBox hbBtnMulti = new HBox(10);
 		hbBtnMulti.getChildren().add(btnMultiPlayer);
 		
 		Button btnLeaderboard = new Button("Leaderboard");
-		btnLeaderboard.setDefaultButton(true);
 		HBox hbBtnLeaderboard = new HBox(10);
 		hbBtnLeaderboard.getChildren().add(btnLeaderboard);
 		
@@ -271,13 +269,11 @@ public class Main extends Application
 		HBox hbBtnShortTimes = new HBox(10);
 		hbBtnShortTimes.getChildren().add(btnShortTimes);
 		
-		Button btnLongTimes = new Button("Long");
-		btnLongTimes.setDefaultButton(true);
+		Button btnLongTimes = new Button("Long")
 		HBox hbBtnLongTimes = new HBox(10);
 		hbBtnLongTimes.getChildren().add(btnLongTimes);
 		
 		Button btnMainMenu = new Button("Main menu");
-		btnMainMenu.setDefaultButton(true);
 		HBox hbBtnMainMenu = new HBox(10);
 		hbBtnMainMenu.getChildren().add(btnMainMenu);
 		
@@ -528,7 +524,6 @@ public class Main extends Application
 	private void addButtonsToTopBar(Stage primaryStage)
 	{
 		Button btnMainMenu = new Button("Main menu");
-		btnMainMenu.setDefaultButton(true);
 		HBox hbBtnMainMenu = new HBox(10);
 		hbBtnMainMenu.getChildren().add(btnMainMenu);
 		hbBtnMainMenu.setAlignment(Pos.CENTER_RIGHT);
@@ -695,7 +690,6 @@ public class Main extends Application
 		entryGrid.add(nameTwoTextField, 1, 2);
 		
 		Button btnLong = new Button("Long game");
-		btnLong.setDefaultButton(true);
 		HBox hbBtnLong = new HBox(10);
 		hbBtnLong.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtnLong.getChildren().add(btnLong);
@@ -713,7 +707,6 @@ public class Main extends Application
 		entryGrid.add(playerInstruction, 0, 4, 2, 1);		
 		
 		Button btnMainMenu = new Button("Main menu");
-		btnMainMenu.setDefaultButton(true);
 		HBox hbBtnMainMenu = new HBox(10);
 		hbBtnMainMenu.getChildren().add(btnMainMenu);
 		hbBtnMainMenu.setAlignment(Pos.BOTTOM_RIGHT);
@@ -755,7 +748,6 @@ public class Main extends Application
 		ComboBox<Color> cmb = addCarColorComboBox(entryGrid);
 		
 		Button btnLong = new Button("Long game");
-		btnLong.setDefaultButton(true);
 		HBox hbBtnLong = new HBox(10);
 		hbBtnLong.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtnLong.getChildren().add(btnLong);
@@ -769,7 +761,6 @@ public class Main extends Application
 		entryGrid.add(hbBtnShort, 0, 6);
 		
 		Button btnMainMenu = new Button("Main menu");
-		btnMainMenu.setDefaultButton(true);
 		HBox hbBtnMainMenu = new HBox(10);
 		hbBtnMainMenu.getChildren().add(btnMainMenu);
 		hbBtnMainMenu.setAlignment(Pos.BOTTOM_RIGHT);
