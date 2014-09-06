@@ -4,8 +4,20 @@ import javafx.scene.image.Image;
 
 public class FinishLine extends Sprite
 {
-	public final static double WIDTH = Road.WIDTH;
-	public final static double HEIGHT = 20;
+	public enum Dimension {
+		WIDTH(Road.Dimension.WIDTH.getValue()), HEIGHT(20);
+		
+		private double value;
+		
+		private Dimension(double value)
+		{
+			this.value = value;
+		}	
+		public double getValue()
+		{
+			return value;
+		}
+	}
 	
 	public FinishLine(double posX, double posY, Image image)
 	{

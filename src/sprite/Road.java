@@ -4,8 +4,20 @@ import javafx.scene.image.Image;
 
 public class Road extends Sprite
 {
-	public final static double WIDTH = 305;
-	public final static double HEIGHT = 346;
+	public enum Dimension {
+		WIDTH(305), HEIGHT(346);
+		
+		private double value;
+		
+		private Dimension(double value)
+		{
+			this.value = value;
+		}	
+		public double getValue()
+		{
+			return value;
+		}
+	}
 		
 	public Road(double posX, double posY, Image image)
 	{

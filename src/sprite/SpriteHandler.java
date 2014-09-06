@@ -11,7 +11,7 @@ public class SpriteHandler extends Vector<Sprite>
 	
 	public SpriteHandler(int roadNumberCoefficient)
 	{
-		this.trackEnd = (roadNumberCoefficient+1)*Road.HEIGHT + Main.TOP_BUFFER;
+		this.trackEnd = (roadNumberCoefficient+1)*Road.Dimension.HEIGHT.getValue() + Main.TOP_BUFFER;
 	}
 	
 	public double getTrackEnd()
@@ -134,12 +134,12 @@ public class SpriteHandler extends Vector<Sprite>
 						double yDiff = Math.abs(carY-wallY);
 						double xDiff = Math.abs(carX-wallX);
 
-						if (yDiff < Wall.HEIGHT
-								&& (xDiff < Wall.WIDTH && carX + Car.HEIGHT > wallX))
+						if (yDiff < Wall.Dimension.HEIGHT.getValue()
+								&& (xDiff < Wall.Dimension.WIDTH.getValue() && carX + Car.Dimension.HEIGHT.getValue() > wallX))
 						{
 							boolean applyX = false;
 							boolean applyY = false;
-							if (Wall.HEIGHT - yDiff > Wall.WIDTH - xDiff - Car.WIDTH/2)
+							if (Wall.Dimension.HEIGHT.getValue() - yDiff > Wall.Dimension.WIDTH.getValue() - xDiff - Car.Dimension.WIDTH.getValue()/2)
 							{
 								if ((carX < wallX && carXMove > 0)
 										|| (carX > wallX && carXMove < 0))
@@ -147,10 +147,10 @@ public class SpriteHandler extends Vector<Sprite>
 									applyX = true;
 								}
 							}
-							else if (Wall.WIDTH - xDiff > Wall.HEIGHT - yDiff - Car.HEIGHT/2)
+							else if (Wall.Dimension.WIDTH.getValue() - xDiff > Wall.Dimension.HEIGHT.getValue() - yDiff - Car.Dimension.HEIGHT.getValue()/2)
 							{
 								if ((carY < wallY && carYMove < 0)
-										|| (carY > wallY && carYMove > 0 && ((xDiff < Car.WIDTH) || (carX > wallX))))
+										|| (carY > wallY && carYMove > 0 && ((xDiff < Car.Dimension.WIDTH.getValue()) || (carX > wallX))))
 								{
 									applyY = true;
 								}
@@ -172,7 +172,7 @@ public class SpriteHandler extends Vector<Sprite>
 						double finishY = sprite.getPosY();
 						double yDiff = Math.abs(carY-finishY);
 
-						if (yDiff < FinishLine.HEIGHT)
+						if (yDiff < FinishLine.Dimension.HEIGHT.getValue())
 						{
 							Main.setGameWon();
 							car.setWinner(true);

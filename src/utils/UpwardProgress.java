@@ -6,6 +6,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
+/**
+ * Not my code. Found on the internet.
+ *
+ */
 public class UpwardProgress 
 {
     private ProgressBar progressBar    = new ProgressBar();

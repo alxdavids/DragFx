@@ -45,14 +45,47 @@ import utils.RestrictiveTextField;
 
 public class Main extends Application 
 {
-	private static final int LONG_GAME_LENGTH = -15;
-	private static final int SHORT_GAME_LENGTH = -8;
+	public enum GameLength {
+		LONG(-15), SHORT(-8);
+		
+		private int value;
+		
+		private GameLength(int value)
+		{
+			this.value = value;
+		}
+	}	
+	public enum CarColorHtml {
+		CAR_YELLOW_HTML("#FFC601"), CAR_BLUE_HTML("#2490FB");
+		
+		private String colorHexCode;
+		
+		private CarColorHtml(String colorHexCode)
+		{
+			this.colorHexCode = colorHexCode;
+		}
+		public String getColorHexCode()
+		{
+			return colorHexCode;
+		}
+	}	
+	public enum CarColor {
+		CAR_YELLOW(CarColorHtml.CAR_YELLOW_HTML.colorHexCode), CAR_BLUE(CarColorHtml.CAR_BLUE_HTML.colorHexCode);
+		
+		private Color color;
+		
+		private CarColor(String colorHexCode)
+		{
+			this.color = Color.web(colorHexCode);
+		}	
+		public Color getColor()
+		{
+			return color;
+		}
+	}
+	
 	private static final double MOVEMENT_AMOUNT = 4.5;
 	public static final int TOP_BUFFER = 200;
-	public static final String CAR_YELLOW_HTML = "#FFC601";
-	public static final String CAR_BLUE_HTML = "#2490FB";
-	public static final Color CAR_YELLOW = Color.web(CAR_YELLOW_HTML);
-	public static final Color CAR_BLUE = Color.web(CAR_BLUE_HTML);
 	private static final double TIME_GAP = 0.1;
 	
 	private AnimationTimer animTimer;
@@ -243,54 +276,12 @@ public class Main extends Application
 		{
 			public void handle(long arg0) 
 			{
-				/*if (!singlePlayer)
-				{
-					Car carOne = cars.elementAt(0);
-					Car carTwo = cars.elementAt(1);
-					
-					double trackDispOne = carOne.getTrackDisposition();
-					double trackDispTwo = carTwo.getTrackDisposition();
-
-					if (trackDispTwo > 0 && trackDispTwo > trackDispTwoPrev + 1)
-					{
-						System.out.println("trackDispOne = " + trackDispOne);
-						System.out.println("trackDispTwo = " + trackDispTwo);
-						System.out.println("sprOne = " + carOne.getSpriteModifier());
-						System.out.println("carMOne = " + carOne.getCarModifier());
-						System.out.println("sprTwo = " + carTwo.getSpriteModifier());
-						System.out.println("carMTwo = " + carTwo.getCarModifier());
-						System.out.println("carOneY = " + carOne.getPosY());
-						System.out.println("carTwoY = " + carTwo.getPosY());
-						
-						trackDispTwoPrev = trackDispTwo;
-					}
-					
-					if (trackDispOne > trackDispTwo)
-					{
-						modifyTrackPositions(carOne, trackDispOne, carTwo, trackDispTwo);
-						trackDispLargest = trackDispOne;
-					}
-					else if (trackDispTwo > trackDispOne)
-					{
-						modifyTrackPositions(carTwo, trackDispTwo, carOne, trackDispOne);
-						trackDispLargest = trackDispTwo;
-					}
-				}*/
 				update(gameScene);
 			}			
 		};
 		
 		animTimer.start();
 	}
-
-	/*private void modifyTrackPositions(Car carWithGreaterTrackDisposition, double trackDispGreater, 
-							Car carWithLessTrackDisposition, double trackDispLesser)
-	{
-		carWithGreaterTrackDisposition.setCarModifier(trackDispGreater - trackDispLesser);
-		carWithGreaterTrackDisposition.setSpriteModifier(0);
-		carWithLessTrackDisposition.setCarModifier(-(trackDispGreater - trackDispLesser));
-		carWithLessTrackDisposition.setSpriteModifier(-(trackDispGreater - trackDispLesser));
-	}*/
 
 	private void initProgressBar(Car car)
 	{
@@ -331,11 +322,11 @@ public class Main extends Application
 		}
 		else if (longGame)
 		{
-			roadNumberCoefficient = LONG_GAME_LENGTH;
+			roadNumberCoefficient = GameLength.LONG.value;
 		}
 		else
 		{
-			roadNumberCoefficient = SHORT_GAME_LENGTH;
+			roadNumberCoefficient = GameLength.SHORT.value;
 		}
 	}
 
@@ -451,7 +442,7 @@ public class Main extends Application
 	private ComboBox<Color> addCarColorComboBox(GridPane entryGrid)
 	{		
 		ComboBox<Color> cmb = new ComboBox<Color>();
-        cmb.getItems().addAll(CAR_YELLOW, CAR_BLUE);
+        cmb.getItems().addAll(CarColor.CAR_YELLOW.color, CarColor.CAR_BLUE.color);
         
         cmb.setCellFactory(new Callback<ListView<Color>, ListCell<Color>>() {
         	public ListCell<Color> call(ListView<Color> p) 
@@ -481,7 +472,7 @@ public class Main extends Application
         	}
         });    
         
-        //render selected colour in combobox
+        //render selected colour in combo box
         cmb.setButtonCell(cmb.getCellFactory().call(null));
         
         Label lbl = new Label("Choose car colour: ");
@@ -566,8 +557,8 @@ public class Main extends Application
 		}
 		
 		playerOne.setUseAlternateControls(true);
-		playerOne.setCarColor(CAR_YELLOW);
-		playerTwo.setCarColor(CAR_BLUE);
+		playerOne.setCarColor(CarColor.CAR_YELLOW.color);
+		playerTwo.setCarColor(CarColor.CAR_BLUE.color);
 		
 		playerOne.setName(nameOne);
 		playerTwo.setName(nameTwo);
@@ -646,7 +637,7 @@ public class Main extends Application
 		if (singlePlayer)
 		{
 			Image carImage = null;
-			if (playerOne.getCarColor().equals(CAR_YELLOW))
+			if (playerOne.getCarColor().equals(CarColor.CAR_YELLOW.color))
 			{
 				carImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
 			}
@@ -722,7 +713,7 @@ public class Main extends Application
 
 	private void addFinishLine(Image finishLineImage, SpriteHandler sprites)
 	{
-		FinishLine finishLine = new FinishLine(0, (roadNumberCoefficient+1)*Road.HEIGHT + Car.HEIGHT, finishLineImage);
+		FinishLine finishLine = new FinishLine(0, (roadNumberCoefficient+1)*Road.Dimension.HEIGHT.getValue() + Car.Dimension.HEIGHT.getValue(), finishLineImage);
 		sprites.add(finishLine);
 	}
 
@@ -739,7 +730,7 @@ public class Main extends Application
 	{
 		for (int i=1; i>roadNumberCoefficient; i--)
 		{
-			Road road = new Road(0, i*Road.HEIGHT, roadImage);
+			Road road = new Road(0, i*Road.Dimension.HEIGHT.getValue(), roadImage);
 			sprites.add(road);
 		}
 	}
@@ -837,10 +828,10 @@ public class Main extends Application
 	private void drawCarWithRotation(GraphicsContext gc, double x, double y, Car car)
 	{
 		gc.save();
-		gc.translate(x + (Car.WIDTH)/2, y + (Car.HEIGHT)/2);
+		gc.translate(x + (Car.Dimension.WIDTH.getValue())/2, y + (Car.Dimension.HEIGHT.getValue())/2);
 		gc.rotate(car.getRotation());
 
-		gc.drawImage(car.getImage(), -(Car.WIDTH)/2, -(Car.HEIGHT)/2);
+		gc.drawImage(car.getImage(), -(Car.Dimension.WIDTH.getValue())/2, -(Car.Dimension.HEIGHT.getValue())/2);
 
 		gc.restore();
 	}
@@ -991,7 +982,7 @@ public class Main extends Application
 				car.setPosY(newY);
 				car.updateProgressBar();
 			}
-			if (newX > 0 && newX < Car.GAME_CANVAS_WIDTH - Car.HEIGHT)
+			if (newX > 0 && newX < Car.GAME_CANVAS_WIDTH - Car.Dimension.HEIGHT.getValue())
 			{
 				car.setPosX(newX);
 			}

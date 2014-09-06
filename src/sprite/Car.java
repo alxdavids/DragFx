@@ -10,8 +10,20 @@ import application.Player;
 
 public class Car extends Sprite
 {
-	public final static double WIDTH = 30;
-	public final static double HEIGHT = 37;
+	public enum Dimension {
+		WIDTH(30), HEIGHT(37);
+		
+		private double value;
+		
+		private Dimension(double value)
+		{
+			this.value = value;
+		}	
+		public double getValue()
+		{
+			return value;
+		}
+	}
 	public final static double GAME_CANVAS_WIDTH = 305;
 	public final static double GAME_CANVAS_HEIGHT = 692;
 	
@@ -45,13 +57,13 @@ public class Car extends Sprite
 	{
 		UpwardProgress upwardProgress = new UpwardProgress(15, 692);
 		bar = upwardProgress.getProgressBar();
-		if (player.getCarColor().equals(Main.CAR_YELLOW))
+		if (player.getCarColor().equals(Main.CarColor.CAR_YELLOW.getColor()))
 		{
-			bar.setStyle("-fx-base: skyblue; -fx-accent: " + Main.CAR_YELLOW_HTML);
+			bar.setStyle("-fx-base: skyblue; -fx-accent: " + Main.CarColorHtml.CAR_YELLOW_HTML.getColorHexCode());
 		}
 		else
 		{
-			bar.setStyle("-fx-base: skyblue; -fx-accent: " + Main.CAR_BLUE_HTML);
+			bar.setStyle("-fx-base: skyblue; -fx-accent: " + Main.CarColorHtml.CAR_BLUE_HTML.getColorHexCode());
 		}
 		bar.setProgress(0);
 		
@@ -173,7 +185,7 @@ public class Car extends Sprite
 	}
 	public void setTrackDisposition(double highestY)
 	{
-		this.trackDisposition = highestY + Road.HEIGHT - GAME_CANVAS_HEIGHT; // We add the height of a road here as this is the lowest point of the track
+		this.trackDisposition = highestY + Road.Dimension.HEIGHT.getValue() - GAME_CANVAS_HEIGHT; // We add the height of a road here as this is the lowest point of the track
 	}
 	public double getCarModifier()
 	{
