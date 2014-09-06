@@ -214,7 +214,7 @@ public class Main extends Application
 	private void setLeaderboardButtonActions(Button btnLeaderboard, Stage primaryStage)
 	{
 		btnLeaderboard.setOnAction( (e) -> {
-			viewLeaderboard(primaryStage, false);
+			viewLeaderboard(primaryStage, longGame);
 		});
 	}
 
