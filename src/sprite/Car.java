@@ -24,6 +24,20 @@ public class Car extends Sprite
 			return value;
 		}
 	}
+	public enum CanvasDimension {
+		GAME_CANVAS_WIDTH(305), GAME_CANVAS_HEIGHT(692);
+		
+		private double value;
+		
+		private CanvasDimension(double value)
+		{
+			this.value = value;
+		}
+		public double getValue()
+		{
+			return value;
+		}
+	}
 	public final static double GAME_CANVAS_WIDTH = 305;
 	public final static double GAME_CANVAS_HEIGHT = 692;
 	

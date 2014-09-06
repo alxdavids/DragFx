@@ -1,5 +1,12 @@
 package application;
 	
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javafx.animation.AnimationTimer;
@@ -25,6 +32,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -81,12 +89,41 @@ public class Main extends Application
 			return color;
 		}
 	}
+	public enum FilePaths {
+		DRAGFX_FOLDER("D:\\DragFx"), DRAGFX_LEADERBOARD("D:\\DragFx\\Leaderboard.txt");
+		
+		private String filePath;
+		
+		private FilePaths(String filePath)
+		{
+			this.filePath = filePath;
+		}
+		public String getFilePath()
+		{
+			return filePath;
+		}
+	}
+	public enum Styles {
+		BOLD("-fx-font-weight: bold");
+		
+		private String style;
+		
+		private Styles(String style)
+		{
+			this.style = style;
+		}
+		public String getStyle()
+		{
+			return style;
+		}
+	}
 	
 	private static final double MOVEMENT_AMOUNT = 4.5;
 	public static final int TOP_BUFFER = 200;
 	private static final double TIME_GAP = 0.1;
 	
 	private AnimationTimer animTimer;
+	private Label timerText = null;
 	private boolean endOfTrack = false;
 	private boolean longGame = false;
 	private static boolean gameWon = false;
@@ -95,6 +132,8 @@ public class Main extends Application
 	private Timeline timer = null;
 	private GridPane topBar = null;
 	private Vector<Car> cars = null;
+	private boolean started = false;
+	private String winnerName = "";
 	
 	private static boolean singlePlayer = true;
 	
@@ -142,7 +181,8 @@ public class Main extends Application
 		HBox hbBtnLeaderboard = new HBox(10);
 		hbBtnLeaderboard.getChildren().add(btnLeaderboard);
 		
-		setupInitialButtonActions(btnSinglePlayer, btnMultiPlayer, btnLeaderboard, primaryStage);
+		setInitialButtonActions(btnSinglePlayer, btnMultiPlayer, primaryStage);
+		setLeaderboardButtonActions(btnLeaderboard, primaryStage);
 		
 		btnPane.setTop(btnSinglePlayer);
 		btnPane.setCenter(btnMultiPlayer);
@@ -159,7 +199,7 @@ public class Main extends Application
 		BorderPane.setAlignment(btnLeaderboard, Pos.CENTER);
 	}
 
-	private void setupInitialButtonActions(Button btnSinglePlayer, Button btnMultiPlayer, Button btnLeaderboard, Stage primaryStage)
+	private void setInitialButtonActions(Button btnSinglePlayer, Button btnMultiPlayer, Stage primaryStage)
 	{		
 		btnSinglePlayer.setOnAction( (e) -> {
 			selectOptions(primaryStage);
@@ -168,7 +208,180 @@ public class Main extends Application
 		btnMultiPlayer.setOnAction( (e) -> {
 			singlePlayer = false;
 			selectOptions(primaryStage);
+		});		
+	}
+	
+	private void setLeaderboardButtonActions(Button btnLeaderboard, Stage primaryStage)
+	{
+		btnLeaderboard.setOnAction( (e) -> {
+			viewLeaderboard(primaryStage, false);
 		});
+	}
+
+	private void viewLeaderboard(Stage primaryStage, boolean viewLongTimes)
+	{
+		GridPane leaderboard = new GridPane();
+		leaderboard.setAlignment(Pos.CENTER);
+		leaderboard.setHgap(10);
+		leaderboard.setVgap(10);
+		leaderboard.setPadding(new Insets(25, 25, 25, 25));
+		leaderboard.setPrefSize(Car.CanvasDimension.GAME_CANVAS_WIDTH.getValue(), 500);
+		
+		Text scenetitle = new Text("DragFx - Leaderboard");
+		scenetitle.setId("dragfx-text");
+		leaderboard.add(scenetitle, 0, 0, 2, 1);
+		
+		Text nameColumn = new Text("Name");
+		nameColumn.setStyle(Styles.BOLD.getStyle());
+		leaderboard.add(nameColumn, 0, 1);
+		
+		Text timeColumn = new Text("Time");
+		timeColumn.setStyle(Styles.BOLD.getStyle());
+		leaderboard.add(timeColumn, 2, 1);
+		
+		ArrayList<Vector<String>> leaderboardEntries = readLeaderboardFile(viewLongTimes);
+		int maxSize = 10;
+		if (leaderboardEntries == null)
+		{
+			maxSize = 0;
+		}
+		else if (leaderboardEntries.size() < maxSize)
+		{
+			maxSize = leaderboardEntries.size();
+		}
+		
+		for (int i=0; i<maxSize; i++)
+		{
+			Vector<String> entry = leaderboardEntries.get(i);
+			
+			String name = entry.elementAt(0);
+			String time = entry.elementAt(1);
+			Text leaderboardName = new Text(name);
+			Text leaderboardTime = new Text(time);
+			
+			leaderboard.add(leaderboardName, 0, i+2, 2, 1);
+			leaderboard.add(leaderboardTime, 2, i+2);
+		}
+		
+		Label view = new Label("View");
+		view.setStyle(Styles.BOLD.getStyle());
+		
+		Button btnShortTimes = new Button("Short");
+		btnShortTimes.setDefaultButton(true);
+		HBox hbBtnShortTimes = new HBox(10);
+		hbBtnShortTimes.getChildren().add(btnShortTimes);
+		
+		Button btnLongTimes = new Button("Long");
+		btnLongTimes.setDefaultButton(true);
+		HBox hbBtnLongTimes = new HBox(10);
+		hbBtnLongTimes.getChildren().add(btnLongTimes);
+		
+		Button btnMainMenu = new Button("Main menu");
+		btnMainMenu.setDefaultButton(true);
+		HBox hbBtnMainMenu = new HBox(10);
+		hbBtnMainMenu.getChildren().add(btnMainMenu);
+		
+		setViewButtonActions(btnShortTimes, btnLongTimes, primaryStage);
+		setMainMenuButtonAction(btnMainMenu, primaryStage);
+		
+		leaderboard.add(view, 0, maxSize+3);
+		leaderboard.add(btnShortTimes, 1, maxSize+3);
+		leaderboard.add(btnLongTimes, 2, maxSize+3);
+		leaderboard.add(btnMainMenu, 2, maxSize+4);
+		
+		Scene leaderboardScene = new Scene(leaderboard, 300, 500);
+		leaderboardScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+		
+		primaryStage.setScene(leaderboardScene);
+		primaryStage.show();
+	}
+
+	private void setMainMenuButtonAction(Button btnMainMenu, Stage primaryStage)
+	{
+		btnMainMenu.setOnAction( (e) -> {
+			resetVariables();
+			start(primaryStage);
+		});
+	}
+
+	private void resetVariables()
+	{
+		gameWon = false;
+		endOfTrack = false;
+		time = 0;
+		started = false;
+		winnerName = "";
+	}
+
+	private void setViewButtonActions(Button btnShortTimes, Button btnLongTimes, Stage primaryStage)
+	{
+		btnShortTimes.setOnAction( (e) -> {
+			viewLeaderboard(primaryStage, false);
+		});
+		
+		btnLongTimes.setOnAction( (e) -> {
+			viewLeaderboard(primaryStage, true);
+		});
+	}
+
+	private ArrayList<Vector<String>> readLeaderboardFile(boolean viewLongTimes)
+	{
+		File file = new File(FilePaths.DRAGFX_LEADERBOARD.getFilePath());
+		
+		if (!file.exists())
+		{
+		    return null;
+		}
+
+		ArrayList<Vector<String>> leaderboardEntries = new ArrayList<>();
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(file)))
+		{		    
+			String line = br.readLine();
+			while (line != null)
+			{
+				int indexOfName = line.indexOf(":");
+				int indexOfTime = line.indexOf(":", indexOfName+1);
+				int indexOfTimeString = line.indexOf("Time:");
+				int indexOfType = line.lastIndexOf(":");
+				int indexOfTypeString = line.indexOf("Type:");
+
+				if (indexOfName > -1)
+				{
+					String nameString = line.substring(indexOfName+1, indexOfTimeString-1);
+					String timeString = line.substring(indexOfTime+1, indexOfTypeString-1);
+					String typeString = line.substring(indexOfType+1);
+					String timeTrimmed = timeString.trim();
+					typeString = typeString.trim();
+					
+					if (viewLongTimes && typeString.equals("long"))
+					{
+						addToLeaderboardEntries(leaderboardEntries, nameString, timeTrimmed);
+					}
+					else if (!viewLongTimes && typeString.equals("short"))
+					{
+						addToLeaderboardEntries(leaderboardEntries, nameString, timeTrimmed);
+					}						 
+				}		
+				line = br.readLine();
+		    }
+		} 
+		catch (IOException e) 
+		{
+		    e.printStackTrace();
+		}		
+		
+		return leaderboardEntries;
+	}
+
+	private void addToLeaderboardEntries(
+			ArrayList<Vector<String>> leaderboardEntries, String nameString,
+			String timeTrimmed)
+	{
+		Vector<String> nameAndTime = new Vector<>();
+		nameAndTime.add(nameString);
+		nameAndTime.add(timeTrimmed);
+		leaderboardEntries.add(nameAndTime);
 	}
 
 	private void selectOptions(Stage primaryStage)
@@ -204,9 +417,11 @@ public class Main extends Application
 		topBar = new GridPane(); 
 		topBar.setId("top-bar");
 		topBar.setPadding(new Insets(5, 5, 5, 5));
+		topBar.setVgap(2);
+		topBar.setHgap(10);
 		topBar.setPrefSize(Car.GAME_CANVAS_WIDTH, 50);
 		
-		Label timerText = new Label();
+		timerText = new Label();
 		timerText.setId("timer-text");
 		topBar.add(timerText, 0, 0);
 						
@@ -241,25 +456,40 @@ public class Main extends Application
 		primaryStage.setScene(gameScene);
 		primaryStage.show();	
 		
-		timer = new Timeline(
-			new KeyFrame(Duration.seconds(0), (e) -> {
-		        	  	timerText.setText("" + time);
-		        	  	time = time + TIME_GAP;
-		          }),
-		    new KeyFrame(Duration.seconds(TIME_GAP))
-		);
-		timer.setCycleCount(Timeline.INDEFINITE);
-		timer.play();
-		
 		animTimer = new AnimationTimer() 
 		{
 			public void handle(long arg0) 
 			{
-				update(gameScene);
+				update(gameScene, primaryStage);
 			}			
 		};
 		
-		animTimer.start();
+		timer = new Timeline(
+				new KeyFrame(Duration.seconds(0), (e) -> {
+					if (time < 1.5)
+					{
+						timerText.setText("Get ready!");
+					}
+					else if (time > 1.5 && time < 2)
+					{
+						timerText.setText("Go!");
+					}
+					else
+					{
+						if (!started)
+						{
+							animTimer.start();
+							started = true;
+						}
+						double timeToDisplay = time-2;
+						timerText.setText("" + timeToDisplay);
+					}
+					time = time + TIME_GAP;
+				}),
+				new KeyFrame(Duration.seconds(TIME_GAP))
+		);
+		timer.setCycleCount(Timeline.INDEFINITE);
+		timer.play();
 	}
 
 	private void initProgressBar(Car car)
@@ -269,7 +499,7 @@ public class Main extends Application
 		car.updateProgressBar();
 	}
 
-	private void update(Scene gameScene)
+	private void update(Scene gameScene, Stage primaryStage)
 	{
 		if (!gameWon)
 		{
@@ -287,10 +517,135 @@ public class Main extends Application
 			gameScene.setOnKeyReleased(null);
 			
 			animTimer.stop();
-			timer.stop();					
+			timer.stop();		
+			
+			writeTimeToLeaderboard();
+			
+			addButtonsToTopBar(primaryStage);
 		}
 	}	
 	
+	private void addButtonsToTopBar(Stage primaryStage)
+	{
+		Button btnMainMenu = new Button("Main menu");
+		btnMainMenu.setDefaultButton(true);
+		HBox hbBtnMainMenu = new HBox(10);
+		hbBtnMainMenu.getChildren().add(btnMainMenu);
+		hbBtnMainMenu.setAlignment(Pos.CENTER_RIGHT);
+		
+		Button btnLeaderboard = new Button("Leaderboard");
+		btnLeaderboard.setDefaultButton(true);
+		HBox hbBtnLeaderboard = new HBox(10);
+		hbBtnLeaderboard.getChildren().add(btnLeaderboard);
+		hbBtnLeaderboard.setAlignment(Pos.CENTER_RIGHT);
+		
+		setMainMenuButtonAction(btnMainMenu, primaryStage);
+		setLeaderboardButtonActions(btnLeaderboard, primaryStage);
+		
+		// spacers
+		final Pane pane1 = new Pane();
+		final Pane pane2 = new Pane();
+		pane1.setPrefWidth(30);
+		pane2.setPrefWidth(30);
+		
+		topBar.add(pane1, 2, 0);
+		topBar.add(pane2, 2, 1);
+		
+		topBar.add(hbBtnLeaderboard, 3, 0);
+		topBar.add(hbBtnMainMenu, 3, 1);	
+	}
+
+	private void writeTimeToLeaderboard()
+	{
+		String timeString = timerText.getText();
+		double time = Double.parseDouble(timeString);	
+			
+		try
+		{
+			File file = getLeaderboardFile();	
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String line = br.readLine();
+			ArrayList<String> lines = new ArrayList<>();
+			
+			boolean nullLines = true;
+			boolean lineAdded = false;
+			while (line != null)
+			{
+				nullLines = false;
+				int indexOfTimeStart = line.indexOf("Time:");
+				int indexOfScore = line.indexOf(":", indexOfTimeStart+1);
+				int indexOfTypeStart = line.indexOf("Type:");
+				if (indexOfScore > -1)
+				{
+				    String scoreString = line.substring(indexOfScore+1, indexOfTypeStart-1);
+				    String scoreTrimmed = scoreString.trim();
+				    double timeToCheck = Double.parseDouble(scoreTrimmed);
+				    if (time < timeToCheck)
+				    {
+				    	addNewTime(time, lines);
+				    	lineAdded = true;
+				    	lines.add(line);
+				    }
+				    else
+				    {
+				    	lines.add(line);
+				    }
+				}
+				line = br.readLine();
+			}
+			
+			if (nullLines || !lineAdded)
+			{
+				addNewTime(time, lines);
+			}
+			
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+			for (String lineToWrite : lines)
+			{
+				bw.write(lineToWrite);
+			    bw.newLine();
+			}
+			bw.close();
+		} 
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	private void addNewTime(double time, ArrayList<String> lines)
+	{
+		if (!testMode)
+		{
+			if (longGame)
+			{
+				lines.add("Name:" + winnerName + " Time:" + time + " Type:long");
+			}
+			else
+			{
+				lines.add("Name:" + winnerName + " Time:" + time + " Type:short");
+			}
+		}
+	}
+
+	private File getLeaderboardFile() throws IOException
+	{
+		File folder = new File(FilePaths.DRAGFX_FOLDER.getFilePath());
+		File file = new File(FilePaths.DRAGFX_LEADERBOARD.getFilePath());
+
+		if (!folder.exists())   
+		{
+			folder.mkdir();		
+			file.createNewFile();
+		}
+		else if (!file.exists())
+		{
+			file.createNewFile();
+		}
+		
+		return file;
+	}
+
 	private void setRoadNumberCoefficient()
 	{
 		if (testMode)
@@ -357,8 +712,17 @@ public class Main extends Application
 		playerInstruction.setText("Player one uses WAD controls.");
 		entryGrid.add(playerInstruction, 0, 4, 2, 1);		
 		
+		Button btnMainMenu = new Button("Main menu");
+		btnMainMenu.setDefaultButton(true);
+		HBox hbBtnMainMenu = new HBox(10);
+		hbBtnMainMenu.getChildren().add(btnMainMenu);
+		hbBtnMainMenu.setAlignment(Pos.BOTTOM_RIGHT);
+		entryGrid.add(hbBtnMainMenu, 1, 5);
+		
+		setMainMenuButtonAction(btnMainMenu, primaryStage);	
+		
 		final Text errorAction = new Text();
-        entryGrid.add(errorAction, 0, 5, 2, 1);
+        entryGrid.add(errorAction, 0, 6, 2, 1);
 		
         setMultiPlayerButtonActions(primaryStage, nameOneTextField, nameTwoTextField, btnLong, btnShort, errorAction);
 	}
@@ -404,8 +768,17 @@ public class Main extends Application
 		hbBtnShort.getChildren().add(btnShort);
 		entryGrid.add(hbBtnShort, 0, 6);
 		
+		Button btnMainMenu = new Button("Main menu");
+		btnMainMenu.setDefaultButton(true);
+		HBox hbBtnMainMenu = new HBox(10);
+		hbBtnMainMenu.getChildren().add(btnMainMenu);
+		hbBtnMainMenu.setAlignment(Pos.BOTTOM_RIGHT);
+		entryGrid.add(hbBtnMainMenu, 1, 7);
+		
+		setMainMenuButtonAction(btnMainMenu, primaryStage);		
+		
 		final Text errorAction = new Text();
-        entryGrid.add(errorAction, 0, 7, 2, 1);
+        entryGrid.add(errorAction, 0, 8, 2, 1);
 		
 		setSinglePlayerButtonActions(primaryStage, nameTextField, btnLong, btnShort, cBox, errorAction, cmb);
 	}
@@ -770,7 +1143,8 @@ public class Main extends Application
 			{
 				if (checkCar.getWinner())
 				{
-					Label winnerText = new Label(checkCar.getPlayer().getName() + " is the winner!");
+					winnerName = checkCar.getPlayer().getName();
+					Label winnerText = new Label( winnerName + " is the winner!");
 					winnerText.setId("winner-text");	
 					topBar.add(winnerText, 0, 1, 2, 1);
 				}
