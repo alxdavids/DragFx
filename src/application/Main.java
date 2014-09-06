@@ -6,8 +6,6 @@ import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -155,8 +153,7 @@ public class Main extends Application
 		return initialScene;
 	}
 
-	private void setCentralAlignment(Button btnSinglePlayer,
-			Button btnLeaderboard)
+	private void setCentralAlignment(Button btnSinglePlayer, Button btnLeaderboard)
 	{
 		BorderPane.setAlignment(btnSinglePlayer, Pos.CENTER);
 		BorderPane.setAlignment(btnLeaderboard, Pos.CENTER);
@@ -193,7 +190,7 @@ public class Main extends Application
 
 	private void startGame(Stage primaryStage)
 	{
-		Vector<Player> players = new Vector<Player>();
+		Vector<Player> players = new Vector<>();
 		players.add(playerOne);
 		if (!singlePlayer)
 		{
@@ -214,15 +211,15 @@ public class Main extends Application
 		topBar.add(timerText, 0, 0);
 						
 		HBox canvasHBox = new HBox();
-		Vector<Group> progressBars = new Vector<Group>();
-		for (Car car : cars)
-		{
+		Vector<Group> progressBars = new Vector<>();
+		
+		cars.forEach( (car) -> {
 			Group progressBar = car.initProgressBar();
 			progressBars.add(progressBar);
 			initProgressBar(car);
 			canvasHBox.getChildren().add(car.getGameCanvas());
 			drawGame(car);
-		}	
+		});
 		
 		HBox hBox = new HBox();
 		for (Group progressBar : progressBars)
@@ -277,13 +274,12 @@ public class Main extends Application
 		if (!gameWon)
 		{
 			updatePosition();
-			for (Car car : cars)
-			{
+			cars.forEach( (car) -> {
 				if (car.getCarCloseToTop() && !endOfTrack)
 				{
 					scrollScreen(car, car.getSprites());
 				}
-			}
+			});
 		}
 		else 
 		{
@@ -552,8 +548,7 @@ public class Main extends Application
 
 	private void handleKeyReleased(KeyEvent event)
 	{
-		for (Car car : cars)
-		{
+		cars.forEach( (car) -> {
 			Player player = car.getPlayer();
 			boolean useAlternateControls = player.getUseAlternateControls();
 			if (event.getCode() == KeyCode.UP && !useAlternateControls
@@ -567,13 +562,12 @@ public class Main extends Application
 				car.setRotationEnabled(false);
 				car.setRotMove(0);
 			}
-		}
+		});
 	}
 	
 	private void handleKeyPressed(KeyEvent event)
 	{
-		for (Car car : cars)
-		{
+		cars.forEach( (car) -> {
 			Player player = car.getPlayer();
 			boolean useAlternateControls = player.getUseAlternateControls();
 			if (event.getCode() == KeyCode.UP && !useAlternateControls
@@ -592,15 +586,15 @@ public class Main extends Application
 			{
 				car.setRotationEnabled(true);
 				car.setRotMove(-5);
-			}
-		}
+			}		
+		});
 	}
 
 	private void createSprites()
 	{
 		SpriteHandler sprites = new SpriteHandler(roadNumberCoefficient);
 		SpriteHandler spritesCopy = null;
-		cars = new Vector<Car>();
+		cars = new Vector<>();
 		if (singlePlayer)
 		{
 			Image carImage = null;
@@ -650,8 +644,8 @@ public class Main extends Application
 	private SpriteHandler createSpritesVectorCopy(SpriteHandler sprites)
 	{
 		SpriteHandler spritesCopy = new SpriteHandler(roadNumberCoefficient);
-		for (Sprite sprite : sprites)
-		{
+		
+		sprites.forEach( (sprite) -> {
 			if (sprite instanceof Car)
 			{				
 				Car car = new Car(new Image(this.getClass().getResource("CarPixlrBlue.png").toString()), 
@@ -673,7 +667,8 @@ public class Main extends Application
 				FinishLine fl = new FinishLine(sprite.getPosX(), sprite.getPosY(), sprite.getImage());
 				spritesCopy.add(fl);
 			}
-		}
+		});
+		
 		return spritesCopy;
 	}
 
@@ -726,27 +721,26 @@ public class Main extends Application
 		boolean reachedEndOfTrack = true;
 		SpriteHandler sprites = car.getSprites();
 		
-		double spriteMod = car.getSpriteModifier();
 		for (Sprite sprite : sprites)
 		{
 			if (sprite instanceof Road)
 			{
 				Road road = (Road) sprite;
-				gc.drawImage(road.getImage(), road.getPosX(), road.getPosY() + spriteMod);				
-				if (road.getPosY() + spriteMod < 0)
+				gc.drawImage(road.getImage(), road.getPosX(), road.getPosY());				
+				if (road.getPosY() < 0)
 				{
 					reachedEndOfTrack = false;
 				}
 			}
 		}
-		for (Sprite sprite : sprites)
-		{
+
+		sprites.forEach( (sprite) -> {
 			if (!(sprite instanceof Road)
 			  && !(sprite instanceof Car))
 			{
-				gc.drawImage(sprite.getImage(), sprite.getPosX(), sprite.getPosY() + spriteMod);
+				gc.drawImage(sprite.getImage(), sprite.getPosX(), sprite.getPosY());
 			}
-		}
+		});
 		
 		if (reachedEndOfTrack)
 		{
@@ -806,8 +800,7 @@ public class Main extends Application
 	
 	private void updatePosition()
 	{
-		for (Car car : cars)
-		{
+		cars.forEach( (car) -> {
 			boolean verticalEnabled = car.getVerticalEnabled();
 			boolean rotationEnabled = car.getRotationEnabled();
 			if (verticalEnabled)
@@ -835,7 +828,7 @@ public class Main extends Application
 			}
 			
 			drawGame(car);
-		}		
+		});
 	}
 
 	private double calculateYMovement(Car car)

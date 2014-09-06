@@ -187,22 +187,6 @@ public class Car extends Sprite
 	{
 		this.trackDisposition = highestY + Road.Dimension.HEIGHT.getValue() - GAME_CANVAS_HEIGHT; // We add the height of a road here as this is the lowest point of the track
 	}
-	public double getCarModifier()
-	{
-		return carModifier;
-	}
-	public void setCarModifier(double carModifier)
-	{
-		this.carModifier = carModifier;
-	}
-	public double getSpriteModifier()
-	{
-		return spriteModifier;
-	}
-	public void setSpriteModifier(double spriteModifier)
-	{
-		this.spriteModifier = spriteModifier;
-	}
 	public SpriteHandler getSprites()
 	{
 		return sprites;
