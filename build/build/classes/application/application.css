@@ -1,0 +1,37 @@
+#dragfx-text {
+	-fx-font-size: 14px;
+}
+
+#winner-text {
+	-fx-font-size: 14px;
+	-fx-font-weight: bold;	
+	-fx-text-fill: #eaeaea;
+}
+
+#timer-text {
+	-fx-font-size: 14px;
+	-fx-text-fill: #eaeaea;
+}
+
+#top-bar {
+	-fx-background-color: #222;
+}
+
+.button {
+	-fx-background-color: #555;
+	-fx-border-color: #FE9A2E;
+	-fx-text-fill: #eaeaea
+}
+
+.combo-box {
+	-fx-background-color: #222;
+}
+
+.combo-box .list-cell {
+	-fx-background-color:  #555
+}
+
+.text-field {
+	-fx-background-color: #555;
+	-fx-text-fill: #eaeaea;
+}
