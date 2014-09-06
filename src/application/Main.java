@@ -269,7 +269,7 @@ public class Main extends Application
 		HBox hbBtnShortTimes = new HBox(10);
 		hbBtnShortTimes.getChildren().add(btnShortTimes);
 		
-		Button btnLongTimes = new Button("Long")
+		Button btnLongTimes = new Button("Long");
 		HBox hbBtnLongTimes = new HBox(10);
 		hbBtnLongTimes.getChildren().add(btnLongTimes);
 		
