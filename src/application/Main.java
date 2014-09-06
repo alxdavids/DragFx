@@ -163,20 +163,14 @@ public class Main extends Application
 	}
 
 	private void setupInitialButtonActions(Button btnSinglePlayer, Button btnMultiPlayer, Button btnLeaderboard, Stage primaryStage)
-	{
-		btnSinglePlayer.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent e)
-			{			
-				selectOptions(primaryStage);
-			}
-		});
-		
-		btnMultiPlayer.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent e)
-			{		
-				singlePlayer = false;
-				selectOptions(primaryStage);
-			}
+	{		
+		btnSinglePlayer.setOnAction( (e) -> {
+			selectOptions(primaryStage);
+		}) ;
+				
+		btnMultiPlayer.setOnAction( (e) -> {
+			singlePlayer = false;
+			selectOptions(primaryStage);
 		});
 	}
 
@@ -221,9 +215,8 @@ public class Main extends Application
 						
 		HBox canvasHBox = new HBox();
 		Vector<Group> progressBars = new Vector<Group>();
-		for (int i=0; i<cars.size(); i++)
+		for (Car car : cars)
 		{
-			Car car = cars.elementAt(i);
 			Group progressBar = car.initProgressBar();
 			progressBars.add(progressBar);
 			initProgressBar(car);
@@ -232,40 +225,29 @@ public class Main extends Application
 		}	
 		
 		HBox hBox = new HBox();
-		for (int i=0; i<progressBars.size(); i++)
+		for (Group progressBar : progressBars)
 		{
-			Group progressBar = progressBars.elementAt(i);
 			hBox.getChildren().add(progressBar);
 		}
 		
 		Scene gameScene = new Scene(new VBox(topBar, new HBox(canvasHBox, hBox)));	
 		gameScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 				
-		gameScene.setOnKeyPressed(new EventHandler<KeyEvent>() 
-		{
-			public void handle(KeyEvent event) 
-			{
-				handleKeyPressed(event);						
-			}				
+		gameScene.setOnKeyPressed( (e) ->  {
+			handleKeyPressed(e);
 		});
 		
-		gameScene.setOnKeyReleased(new EventHandler<KeyEvent>() 
-		{
-			public void handle(KeyEvent event) 
-			{
-				handleKeyReleased(event);
-			}
+		gameScene.setOnKeyReleased( (e) -> {
+				handleKeyReleased(e);
 		});
 		
 		primaryStage.setScene(gameScene);
 		primaryStage.show();	
 		
 		timer = new Timeline(
-			new KeyFrame(Duration.seconds(0), new EventHandler<ActionEvent>() {
-		          @Override public void handle(ActionEvent actionEvent) {
+			new KeyFrame(Duration.seconds(0), (e) -> {
 		        	  	timerText.setText("" + time);
 		        	  	time = time + TIME_GAP;
-		            }
 		          }),
 		    new KeyFrame(Duration.seconds(TIME_GAP))
 		);
@@ -295,9 +277,8 @@ public class Main extends Application
 		if (!gameWon)
 		{
 			updatePosition();
-			for (int i=0; i<cars.size(); i++)
+			for (Car car : cars)
 			{
-				Car car = cars.elementAt(i);
 				if (car.getCarCloseToTop() && !endOfTrack)
 				{
 					scrollScreen(car, car.getSprites());
@@ -389,19 +370,13 @@ public class Main extends Application
 	private void setMultiPlayerButtonActions(Stage primaryStage, RestrictiveTextField nameOneTextField, RestrictiveTextField nameTwoTextField, Button btnLong, 
 								Button btnShort, Text errorAction)
 	{
-		btnLong.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent e)
-			{			
-				longGame = true;								
-				initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
-			}
+		btnLong.setOnAction( (e) -> {
+			longGame = true;
+			initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
 		});
 		
-		btnShort.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent e)
-			{
-				initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
-			}
+		btnShort.setOnAction( (e) -> {
+			initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
 		});
 	}
 	
@@ -485,19 +460,13 @@ public class Main extends Application
 	private void setSinglePlayerButtonActions(Stage primaryStage, RestrictiveTextField nameTextField, Button btnLong, Button btnShort, CheckBox cBox, 
 			final Text errorAction, ComboBox<Color> cmb)
 	{
-		btnLong.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent e)
-			{			
-				longGame = true;								
-				initialiseSinglePlayerGame(primaryStage, nameTextField, cBox, errorAction, cmb);
-			}
+		btnLong.setOnAction( (e) -> {
+			longGame = true;
+			initialiseSinglePlayerGame(primaryStage, nameTextField, cBox, errorAction, cmb);
 		});
 		
-		btnShort.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent e)
-			{
-				initialiseSinglePlayerGame(primaryStage, nameTextField, cBox, errorAction, cmb);
-			}
+		btnShort.setOnAction( (e) -> {
+			initialiseSinglePlayerGame(primaryStage, nameTextField, cBox, errorAction, cmb);
 		});
 	}
 	
@@ -583,9 +552,8 @@ public class Main extends Application
 
 	private void handleKeyReleased(KeyEvent event)
 	{
-		for (int i=0; i<cars.size(); i++)
+		for (Car car : cars)
 		{
-			Car car = cars.elementAt(i);
 			Player player = car.getPlayer();
 			boolean useAlternateControls = player.getUseAlternateControls();
 			if (event.getCode() == KeyCode.UP && !useAlternateControls
@@ -604,9 +572,8 @@ public class Main extends Application
 	
 	private void handleKeyPressed(KeyEvent event)
 	{
-		for (int i=0; i<cars.size(); i++)
+		for (Car car : cars)
 		{
-			Car car = cars.elementAt(i);
 			Player player = car.getPlayer();
 			boolean useAlternateControls = player.getUseAlternateControls();
 			if (event.getCode() == KeyCode.UP && !useAlternateControls
@@ -683,9 +650,8 @@ public class Main extends Application
 	private SpriteHandler createSpritesVectorCopy(SpriteHandler sprites)
 	{
 		SpriteHandler spritesCopy = new SpriteHandler(roadNumberCoefficient);
-		for (int i=0; i<sprites.size(); i++)
+		for (Sprite sprite : sprites)
 		{
-			Sprite sprite = sprites.elementAt(i);
 			if (sprite instanceof Car)
 			{				
 				Car car = new Car(new Image(this.getClass().getResource("CarPixlrBlue.png").toString()), 
@@ -759,11 +725,10 @@ public class Main extends Application
 	{	
 		boolean reachedEndOfTrack = true;
 		SpriteHandler sprites = car.getSprites();
-		int size = sprites.size();
+		
 		double spriteMod = car.getSpriteModifier();
-		for (int i=0; i<size; i++)
+		for (Sprite sprite : sprites)
 		{
-			Sprite sprite = sprites.elementAt(i);
 			if (sprite instanceof Road)
 			{
 				Road road = (Road) sprite;
@@ -774,9 +739,8 @@ public class Main extends Application
 				}
 			}
 		}
-		for (int i=0; i<size; i++)
+		for (Sprite sprite : sprites)
 		{
-			Sprite sprite = sprites.elementAt(i);
 			if (!(sprite instanceof Road)
 			  && !(sprite instanceof Car))
 			{
@@ -808,9 +772,8 @@ public class Main extends Application
 	{
 		if (gameWon)
 		{
-			for (int i=0; i<cars.size(); i++)
+			for (Car checkCar : cars)
 			{
-				Car checkCar = cars.elementAt(i);
 				if (checkCar.getWinner())
 				{
 					Label winnerText = new Label(checkCar.getPlayer().getName() + " is the winner!");
@@ -843,9 +806,8 @@ public class Main extends Application
 	
 	private void updatePosition()
 	{
-		for (int i=0; i<cars.size(); i++)
+		for (Car car : cars)
 		{
-			Car car = cars.elementAt(i);
 			boolean verticalEnabled = car.getVerticalEnabled();
 			boolean rotationEnabled = car.getRotationEnabled();
 			if (verticalEnabled)

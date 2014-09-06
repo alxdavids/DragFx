@@ -28,9 +28,8 @@ public class SpriteHandler extends Vector<Sprite>
 		double lowestY = 0;
 		double highestY = 0;
 		double yMove = car.getYMove();
-		for (int i=0; i<this.size(); i++)
+		for (Sprite sprite : this)
 		{
-			Sprite sprite = this.elementAt(i);
 			double oldY = sprite.getPosY();
 			double newY = oldY + yMove;
 			sprite.setPosY(newY);
