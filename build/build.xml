@@ -132,4 +132,55 @@
 		
 		
 	</target>
+		
+		<target name="-post-jar">
+		   <property name="aliasName" value="Alex"/>
+		   <property name="password" value="qwerty123"/>
+		   <property name="keystoreFileName" location="keystoreFileName.ks"/>
+		   <property name="firstNameSurName" value="Alex Davidson"/>
+		   <property name="organisationUnitOrDepartment" value=""/>
+		   <property name="organisationName" value=""/>
+		   <property name="cityOrLocality" value="Derby"/>
+		   <property name="stateOrProvince" value="Derbyshire"/>
+		   <property name="twoLetterJavaLocaleCountryCode" value="UK"/>
+
+
+
+		   <delete file="${keystoreFileName}" failonerror="false" />
+		   <genkey alias="${aliasName}" storepass="${password}" keystore="${keystoreFileName}">
+		      <dname>
+		      <param name="CN" value="${firstNameSurName}"/>
+		      <param name="OU" value="${organisationUnitOrDepartment}"/>
+		      <param name="O"  value="${organisationName}"/>
+		      <param name="L"  value="${cityOrLocality}"/>
+		      <param name="ST"  value="${stateOrProvince}"/>
+		      <param name="C"  value="${twoLetterJavaLocaleCountryCode}"/>   
+		      </dname>
+		   </genkey>
+
+		   <delete dir="distSigned" failonerror="false" />
+		   <mkdir dir="distSigned" />
+		   <signjar destDir="distSigned"
+		      alias="${aliasName}" keystore="${keystoreFileName}"
+		      storepass="${password}"
+		      preservelastmodified="true">
+		      <path>
+		      <fileset dir="dist" includes="*.jar" />
+		      </path>
+		      <flattenmapper />
+		   </signjar>
+
+		   <mkdir dir="distSigned/lib" />
+		   <signjar destDir="distSigned/lib"
+		      alias="${aliasName}" keystore="${keystoreFileName}"
+		      storepass="${password}"
+		      preservelastmodified="true">
+		      <path>
+		      <fileset dir="dist/lib" includes="*.jar" />
+		      </path>
+		      <flattenmapper />
+		   </signjar>
+
+
+		</target>
 </project>

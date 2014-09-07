@@ -200,6 +200,7 @@ public class Main extends Application
 	private void setInitialButtonActions(Button btnSinglePlayer, Button btnMultiPlayer, Stage primaryStage)
 	{		
 		btnSinglePlayer.setOnAction( (e) -> {
+			singlePlayer = true;
 			selectOptions(primaryStage);
 		}) ;
 				
@@ -225,6 +226,18 @@ public class Main extends Application
 		leaderboard.setPadding(new Insets(25, 25, 25, 25));
 		leaderboard.setPrefSize(Car.CanvasDimension.GAME_CANVAS_WIDTH.getValue(), 500);
 		
+		initialiseLeaderboard(primaryStage, viewLongTimes, leaderboard);
+		
+		Scene leaderboardScene = new Scene(leaderboard, 300, 500);
+		leaderboardScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+		
+		primaryStage.setScene(leaderboardScene);
+		primaryStage.show();
+	}
+
+	private void initialiseLeaderboard(Stage primaryStage,
+			boolean viewLongTimes, GridPane leaderboard)
+	{
 		Text scenetitle = new Text("DragFx - Leaderboard");
 		scenetitle.setId("dragfx-text");
 		leaderboard.add(scenetitle, 0, 0, 2, 1);
@@ -284,12 +297,6 @@ public class Main extends Application
 		leaderboard.add(btnShortTimes, 1, maxSize+3);
 		leaderboard.add(btnLongTimes, 2, maxSize+3);
 		leaderboard.add(btnMainMenu, 2, maxSize+4);
-		
-		Scene leaderboardScene = new Scene(leaderboard, 300, 500);
-		leaderboardScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-		
-		primaryStage.setScene(leaderboardScene);
-		primaryStage.show();
 	}
 
 	private void setMainMenuButtonAction(Button btnMainMenu, Stage primaryStage)
