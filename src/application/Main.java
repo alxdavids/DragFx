@@ -40,9 +40,12 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import sprite.Boost;
 import sprite.Car;
 import sprite.FinishLine;
+import sprite.PowerUp;
 import sprite.Road;
+import sprite.SlowDown;
 import sprite.Sprite;
 import sprite.SpriteHandler;
 import sprite.Wall;
@@ -118,7 +121,6 @@ public class Main extends Application
 		}
 	}
 	
-	private static final double MOVEMENT_AMOUNT = 4.5;
 	public static final int TOP_BUFFER = 200;
 	private static final double TIME_GAP = 0.1;
 	
@@ -377,9 +379,8 @@ public class Main extends Application
 		return leaderboardEntries;
 	}
 
-	private void addToLeaderboardEntries(
-			ArrayList<Vector<String>> leaderboardEntries, String nameString,
-			String timeTrimmed)
+	private void addToLeaderboardEntries(ArrayList<Vector<String>> leaderboardEntries, String nameString,
+							String timeTrimmed)
 	{
 		Vector<String> nameAndTime = new Vector<>();
 		nameAndTime.add(nameString);
@@ -422,7 +423,7 @@ public class Main extends Application
 		topBar.setPadding(new Insets(5, 5, 5, 5));
 		topBar.setVgap(2);
 		topBar.setHgap(10);
-		topBar.setPrefSize(Car.GAME_CANVAS_WIDTH, 50);
+		topBar.setPrefSize(Car.CanvasDimension.GAME_CANVAS_WIDTH.getValue(), 50);
 		
 		timerText = new Label();
 		timerText.setId("timer-text");
@@ -505,9 +506,10 @@ public class Main extends Application
 	private void update(Scene gameScene, Stage primaryStage)
 	{
 		if (!gameWon)
-		{
-			updatePosition();
+		{			
 			cars.forEach( (car) -> {
+				setSpeedForCar(car);								
+				updatePosition(car);
 				if (car.getCarCloseToTop() && !endOfTrack)
 				{
 					scrollScreen(car, car.getSprites());
@@ -525,6 +527,36 @@ public class Main extends Application
 			writeTimeToLeaderboard();
 			
 			addButtonsToTopBar(primaryStage);
+		}
+	}
+
+	private void setSpeedForCar(Car car)
+	{
+		PowerUp powerUp = car.getPowerUp();
+		if (powerUp != null)
+		{
+			// +5 allows power ups to be in action for 5 seconds (since time is 2 seconds behind 
+			// the time game has been running for.
+			if (car.getTimePowerUpReceived()+5 > time)
+			{
+				if (powerUp instanceof Boost)
+				{
+					car.setCurrentSpeed(Car.Speed.BOOST_MOVEMENT_SPEED.getValue());
+				}		
+				else if (powerUp instanceof SlowDown)
+				{
+					car.setCurrentSpeed(Car.Speed.SLOW_MOVEMENT_SPEED.getValue());
+				}
+			}
+			else
+			{
+				car.setPowerUp(null);
+				car.setCurrentSpeed(Car.Speed.NORMAL_MOVEMENT_SPEED.getValue());
+			}
+		}
+		else
+		{
+			car.setCurrentSpeed(Car.Speed.NORMAL_MOVEMENT_SPEED.getValue());
 		}
 	}	
 	
@@ -994,12 +1026,15 @@ public class Main extends Application
 		Image roadImage = new Image(this.getClass().getResource("Road.png").toString());
 		Image wallImage = new Image(this.getClass().getResource("Wall.png").toString());
 		Image finishLineImage = new Image(this.getClass().getResource("FinishLine.png").toString());
+		Image boostImage = new Image(this.getClass().getResource("SpeedBoost.png").toString());
+		Image slowDownImage = new Image(this.getClass().getResource("SpeedSlowDown.png").toString()); 
 				
 		//Remember that anything that you want to add here also has to be added to the method that draws the components
 		addRoads(roadImage, sprites);		
-		addWalls(wallImage, sprites);		
-		checkWallsArePlacedCorrectly(sprites);
+		addWalls(wallImage, sprites);				
 		addFinishLine(finishLineImage, sprites);
+		addPowerUps(boostImage, slowDownImage, sprites);
+		checkSpritesArePlacedCorrectly(sprites);
 
 		Car car = cars.elementAt(0);
 		car.setSprites(sprites);
@@ -1011,6 +1046,39 @@ public class Main extends Application
 			cars.add(carTwo);
 			carTwo.setSprites(spritesCopy);
 		}				
+	}
+
+	private void addPowerUps(Image boostImage, Image slowDownImage,
+			SpriteHandler sprites)
+	{
+		double numberOfBoosts = (Math.abs(roadNumberCoefficient)/3);
+		if (numberOfBoosts == 0)
+		{
+			numberOfBoosts = 1;
+		}
+		
+		for (int i=0; i<numberOfBoosts; i++)
+		{
+			double rndY = Boost.getRandomYCoordinate(roadNumberCoefficient + 1);
+			double rndX = Boost.getRandomXCoordinate();
+						
+			Boost boost = new Boost(boostImage, rndX, rndY);
+			sprites.add(boost);
+		}
+		double numberOfSlowdowns = (Math.abs(roadNumberCoefficient)/4);
+		if (numberOfSlowdowns == 0)
+		{
+			numberOfSlowdowns = 1;
+		}
+
+		for (int i=0; i<numberOfBoosts; i++)
+		{
+			double rndY = SlowDown.getRandomYCoordinate(roadNumberCoefficient + 1);
+			double rndX = SlowDown.getRandomXCoordinate();
+
+			SlowDown slowDown = new SlowDown(slowDownImage, rndX, rndY);
+			sprites.add(slowDown);
+		}
 	}
 
 	private SpriteHandler createSpritesVectorCopy(SpriteHandler sprites)
@@ -1039,6 +1107,16 @@ public class Main extends Application
 				FinishLine fl = new FinishLine(sprite.getPosX(), sprite.getPosY(), sprite.getImage());
 				spritesCopy.add(fl);
 			}
+			else if (sprite instanceof Boost)
+			{
+				Boost powerUp = new Boost(sprite.getImage(), sprite.getPosX(), sprite.getPosY());
+				spritesCopy.add(powerUp);
+			}
+			else if (sprite instanceof SlowDown)
+			{
+				SlowDown powerUp = new SlowDown(sprite.getImage(), sprite.getPosX(), sprite.getPosY());
+				spritesCopy.add(powerUp);
+			}
 		});
 		
 		return spritesCopy;
@@ -1050,12 +1128,12 @@ public class Main extends Application
 		sprites.add(finishLine);
 	}
 
-	private void checkWallsArePlacedCorrectly(SpriteHandler sprites)
+	private void checkSpritesArePlacedCorrectly(SpriteHandler sprites)
 	{
-		boolean wallsInValidPositions = false;
-		while (!wallsInValidPositions)
+		boolean spritesInValidPositions = false;
+		while (!spritesInValidPositions)
 		{
-			wallsInValidPositions = sprites.checkWallsArePlacedCorrectly();
+			spritesInValidPositions = sprites.checkSpritesArePlacedCorrectly();
 		}
 	}
 
@@ -1171,37 +1249,35 @@ public class Main extends Application
 		launch(args);
 	}
 	
-	private void updatePosition()
+	private void updatePosition(Car car)
 	{
-		cars.forEach( (car) -> {
-			boolean verticalEnabled = car.getVerticalEnabled();
-			boolean rotationEnabled = car.getRotationEnabled();
-			if (verticalEnabled)
-			{
-				updateVerticalPosition(true, car);
-			}
+		boolean verticalEnabled = car.getVerticalEnabled();
+		boolean rotationEnabled = car.getRotationEnabled();
+		if (verticalEnabled)
+		{
+			updateVerticalPosition(true, car);
+		}
 
-			if (rotationEnabled)
-			{
-				updateRotation(car);
-			}
+		if (rotationEnabled)
+		{
+			updateRotation(car);
+		}
 
-			double xMove = car.getXMove();
-			double yMove = car.getYMove();
-			boolean inMotion = yMove > 0 || yMove < 0 || xMove < 0 || xMove > 0;
-			if (!verticalEnabled && inMotion)
-			{
-				yMove = calculateYMovement(car);
-				xMove = calculateXMovement(car);
+		double xMove = car.getXMove();
+		double yMove = car.getYMove();
+		boolean inMotion = yMove > 0 || yMove < 0 || xMove < 0 || xMove > 0;
+		if (!verticalEnabled && inMotion)
+		{
+			yMove = calculateYMovement(car);
+			xMove = calculateXMovement(car);
 
-				car.setXMove(xMove);
-				car.setYMove(yMove);
+			car.setXMove(xMove);
+			car.setYMove(yMove);
 
-				updateVerticalPosition(false, car);
-			}
-			
-			drawGame(car);
-		});
+			updateVerticalPosition(false, car);
+		}
+
+		drawGame(car);
 	}
 
 	private double calculateYMovement(Car car)
@@ -1284,8 +1360,9 @@ public class Main extends Application
 		double yMove = car.getYMove();
 		if (accelerating)
 		{
-			yMove = MOVEMENT_AMOUNT*Math.cos(rotationRadians);
-			xMove = MOVEMENT_AMOUNT*Math.sin(rotationRadians);
+			double currentSpeed = car.getCurrentSpeed();
+			yMove = currentSpeed*Math.cos(rotationRadians);
+			xMove = currentSpeed*Math.sin(rotationRadians);
 		}
 		else
 		{
@@ -1296,7 +1373,8 @@ public class Main extends Application
 		car.setXMove(xMove);
 		
 		SpriteHandler sprites = car.getSprites();
-		sprites.resolveCollisions();
+		// Pass in time-2 as this is the actual time.
+		sprites.resolveCollisions(time-2);
 		
 		double oldY = car.getPosY();
 		double newY = oldY - yMove;
@@ -1310,7 +1388,7 @@ public class Main extends Application
 				car.setPosY(newY);
 				car.updateProgressBar();
 			}
-			if (newX > 0 && newX < Car.GAME_CANVAS_WIDTH - Car.Dimension.HEIGHT.getValue())
+			if (newX > 0 && newX < Car.CanvasDimension.GAME_CANVAS_WIDTH.getValue() - Car.Dimension.HEIGHT.getValue())
 			{
 				car.setPosX(newX);
 			}

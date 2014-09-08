@@ -31,7 +31,7 @@ To-do list
 	- More car colours?
 - ~~Leaderboard~~
 - Sound effects for collisions engines etc.
-- Pickups that provide bonuses to the player (faster car, timer slowdown in single player etc.)
+- ~~Pickups that provide bonuses to the player (faster car, timer slowdown in single player etc.)~~ (Added some but wiill probably want more as time goes on)
 
 
 (Much Later)

@@ -6,6 +6,21 @@ import application.Main;
 
 public class SpriteHandler extends Vector<Sprite>
 {
+	private enum SpriteType {
+		WALL(0),POWERUP(1);
+		
+		private int value;
+		
+		private SpriteType(int value)
+		{
+			this.value = value;
+		}
+		public int getValue()
+		{
+			return value;
+		}
+	}
+	
 	private static final long serialVersionUID = 1L;
 	private double trackEnd = 0;
 	
@@ -26,7 +41,6 @@ public class SpriteHandler extends Vector<Sprite>
 	public void scrollSprites(Car car)
 	{
 		double lowestY = 0;
-		double highestY = 0;
 		double yMove = car.getYMove();
 		for (Sprite sprite : this)
 		{
@@ -37,22 +51,18 @@ public class SpriteHandler extends Vector<Sprite>
 			{
 				lowestY = newY;
 			}
-			if (newY > highestY)
-			{
-				highestY = newY;
-			}
 		}
 		
 		setTrackEnd(lowestY);
-		car.setTrackDisposition(highestY);
 	}
 
 	/**
 	 * Check that the walls aren't too close to each other.
 	 */
-	public boolean checkWallsArePlacedCorrectly()
+	
+	public boolean checkSpritesArePlacedCorrectly()
 	{
-		boolean wallTooClose = false;
+		boolean spriteTooClose = false;
 		
 		int size = this.size();
 		for (int i=0; i<size; i++)
@@ -60,44 +70,16 @@ public class SpriteHandler extends Vector<Sprite>
 			Sprite sprite = this.elementAt(i);
 			if (sprite instanceof Wall)
 			{
-				for (int j=0; j<size; j++)
+				if(!validSpritePosition(spriteTooClose, size, i, sprite, SpriteType.WALL.getValue()))
 				{
-					if (j != i)
-					{
-						Sprite correspondingSprite = this.elementAt(j);
-						if (correspondingSprite instanceof Wall)
-						{
-							double x = sprite.getPosX(); 
-							double y = sprite.getPosY();
-							
-							double corrX = correspondingSprite.getPosX();
-							double corrY = correspondingSprite.getPosY();
-							
-							if (Math.abs(x-corrX) < Wall.BUFFER
-							  && Math.abs(y-corrY) < Wall.BUFFER)
-							{
-								wallTooClose = true;
-							}
-							
-							if (wallTooClose)
-							{
-								break;
-							}
-						}
-					}
+					return false;
 				}
-				
-				/**
-				 * Re-randomise the coordinates if we get two walls that are really close to each other.
-				 */
-				if (wallTooClose)
+			}
+			else if (sprite instanceof PowerUp)
+			{
+				if ((!validSpritePosition(spriteTooClose, size, i, sprite, SpriteType.WALL.getValue())
+				  || (!validSpritePosition(spriteTooClose, size, i, sprite, SpriteType.POWERUP.getValue()))))
 				{
-					double rndY = Wall.getRandomYCoordinate(Main.getRoadNumberCoefficient() + 1);
-					sprite.setPosY(rndY);
-
-					double rndX = Wall.getRandomXCoordinate();
-					sprite.setPosX(rndX);
-
 					return false;
 				}
 			}
@@ -105,10 +87,84 @@ public class SpriteHandler extends Vector<Sprite>
 		return true;
 	}
 
+	private boolean validSpritePosition(boolean spriteTooClose, int size, int i, Sprite sprite, int type)
+	{
+		for (int j=0; j<size; j++)
+		{
+			if (j != i)
+			{
+				Sprite correspondingSprite = this.elementAt(j);
+				if (correspondingSprite instanceof Wall
+				  && type == SpriteType.WALL.getValue())
+				{
+					double x = sprite.getPosX(); 
+					double y = sprite.getPosY();
+					
+					double corrX = correspondingSprite.getPosX();
+					double corrY = correspondingSprite.getPosY();
+					
+					double diffX = Math.abs(x-corrX);
+					double diffY = Math.abs(y-corrY);
+					
+					boolean closeToWall = (type == SpriteType.WALL.getValue() && diffX < Wall.BUFFER && diffY < Wall.BUFFER);				
+					if (closeToWall)
+					{
+						spriteTooClose = true;
+						break;
+					}
+				}
+				else if (correspondingSprite instanceof PowerUp
+				  || type == SpriteType.POWERUP.getValue())
+				{
+					double x = sprite.getPosX(); 
+					double y = sprite.getPosY();
+					
+					double corrX = correspondingSprite.getPosX();
+					double corrY = correspondingSprite.getPosY();
+					
+					boolean closeToPowerUp = type == SpriteType.POWERUP.getValue()
+							&& Math.abs(x-corrX) < PowerUp.BUFFER
+							&& Math.abs(y-corrY) < PowerUp.BUFFER;
+					if (closeToPowerUp)
+					{
+						spriteTooClose = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		/**
+		 * Re-randomise the coordinates if we get two walls that are really close to each other.
+		 */
+		if (spriteTooClose)
+		{
+			double rndY = 0;
+			double rndX = 0;
+			
+			if (sprite instanceof Wall)
+			{
+				rndY = Wall.getRandomYCoordinate(Main.getRoadNumberCoefficient() + 1);
+				rndX = Wall.getRandomXCoordinate();
+			}
+			else if (sprite instanceof PowerUp)
+			{
+				rndY = PowerUp.getRandomYCoordinate(Main.getRoadNumberCoefficient() + 1);
+				rndX = PowerUp.getRandomXCoordinate();
+			}
+			
+			sprite.setPosY(rndY);
+			sprite.setPosX(rndX);
+
+			return false;
+		}
+		return true;
+	}
+
 	/**
 	 * Resolve collisions
 	 */
-	public void resolveCollisions()
+	public void resolveCollisions(double time)
 	{
 		for (int j=0; j<2; j++)
 		{
@@ -122,7 +178,7 @@ public class SpriteHandler extends Vector<Sprite>
 				double carXMove = car.getXMove();
 				double carYMove = car.getYMove();
 
-				for (int i=1; i<this.size(); i++)
+				for (int i=this.size()-1; i>0; i--)
 				{
 					Sprite sprite = this.elementAt(i);
 					if (sprite instanceof Wall)
@@ -175,6 +231,28 @@ public class SpriteHandler extends Vector<Sprite>
 						{
 							Main.setGameWon();
 							car.setWinner(true);
+						}
+					}
+					else if (sprite instanceof PowerUp)
+					{
+						double powerX = sprite.getPosX();
+						double powerY = sprite.getPosY();
+						double xDiff = Math.abs(carX-powerX);
+						double yDiff = Math.abs(carY-powerY);
+						
+						if (xDiff < PowerUp.Dimension.WIDTH.getValue()
+						  && yDiff < PowerUp.Dimension.HEIGHT.getValue())
+						{
+							car.setTimePowerUpReceived(time);
+							if (sprite instanceof Boost)
+							{
+								car.setPowerUp((Boost) sprite);
+							}
+							else if (sprite instanceof SlowDown)
+							{
+								car.setPowerUp((SlowDown) sprite);
+							}
+							this.remove(i);
 						}
 					}
 				}

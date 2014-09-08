@@ -38,8 +38,21 @@ public class Car extends Sprite
 			return value;
 		}
 	}
-	public final static double GAME_CANVAS_WIDTH = 305;
-	public final static double GAME_CANVAS_HEIGHT = 692;
+
+	public enum Speed {
+		SLOW_MOVEMENT_SPEED(2), NORMAL_MOVEMENT_SPEED(4.5), BOOST_MOVEMENT_SPEED(6.5);
+		
+		private double value;
+		
+		private Speed(double value)
+		{
+			this.value = value;
+		}
+		public double getValue()
+		{
+			return value;
+		}
+	}
 	
 	private double rotation;
 	private double xMove = 0;
@@ -51,12 +64,13 @@ public class Car extends Sprite
 	private ProgressIndicator bar = null;
 	private Player player = null;
 	private boolean winner = false;
-	private Canvas gameCanvas = new Canvas(GAME_CANVAS_WIDTH,GAME_CANVAS_HEIGHT);
+	private Canvas gameCanvas = new Canvas(CanvasDimension.GAME_CANVAS_WIDTH.getValue(),
+									CanvasDimension.GAME_CANVAS_HEIGHT.getValue());
 	private boolean collisionHappened = false;
-	private double trackDisposition = 0;
-	private double carModifier = 0;
-	private double spriteModifier = 0;
 	private SpriteHandler sprites = null;
+	private PowerUp powerUp = null;
+	private double currentSpeed = 0;
+	private double timePowerUpReceived = 0;
 	
 	public Car(Image image, double posX, double posY, double rotation, Player player)
 	{
@@ -192,15 +206,6 @@ public class Car extends Sprite
 	{
 		this.collisionHappened = collisionHappened;
 	}
-
-	public double getTrackDisposition()
-	{
-		return trackDisposition;
-	}
-	public void setTrackDisposition(double highestY)
-	{
-		this.trackDisposition = highestY + Road.Dimension.HEIGHT.getValue() - GAME_CANVAS_HEIGHT; // We add the height of a road here as this is the lowest point of the track
-	}
 	public SpriteHandler getSprites()
 	{
 		return sprites;
@@ -208,5 +213,30 @@ public class Car extends Sprite
 	public void setSprites(SpriteHandler sprites)
 	{
 		this.sprites = sprites;
+	}
+	
+	public PowerUp getPowerUp()
+	{
+		return powerUp;
+	}
+	public void setPowerUp(PowerUp powerUp)
+	{
+		this.powerUp = powerUp;
+	}
+	public double getCurrentSpeed()
+	{
+		return currentSpeed;
+	}
+	public void setCurrentSpeed(double currentSpeed)
+	{
+		this.currentSpeed = currentSpeed;
+	}
+	public double getTimePowerUpReceived()
+	{
+		return timePowerUpReceived;
+	}
+	public void setTimePowerUpReceived(double time)
+	{
+		this.timePowerUpReceived = time;
 	}
 }
