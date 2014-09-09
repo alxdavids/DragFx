@@ -2,6 +2,8 @@ package sprite;
 
 import java.util.Vector;
 
+import javafx.geometry.Rectangle2D;
+import javafx.scene.shape.Rectangle;
 import application.Main;
 
 public class SpriteHandler extends Vector<Sprite>
@@ -183,6 +185,32 @@ public class SpriteHandler extends Vector<Sprite>
 					Sprite sprite = this.elementAt(i);
 					if (sprite instanceof Wall)
 					{
+						// Keep this for now -- working on some different collisions stuff using the intersections of rectangles
+						Rectangle rectCar = car.getRectangle();
+						Rectangle rectWall = ((Wall) sprite).getRectangle();
+						
+						boolean intersection = rectCar.intersects(sprite.getPosX(), sprite.getPosY(), 
+																  Wall.Dimension.WIDTH.getValue(), 
+																  Wall.Dimension.HEIGHT.getValue());
+						
+						/*boolean applyX = false;
+						boolean applyY = false;
+						if (intersection)
+						{
+							applyY = (rectCar.getY() < rectWall.getY() && car.getYMove() > 0)
+								       || (rectCar.getY() > rectWall.getY() && car.getYMove() < 0);
+							applyX = (rectCar.getX() < rectWall.getX() && car.getXMove() > 0)
+								       || (rectCar.getX() > rectWall.getX() && car.getXMove() < 0);
+						}						
+						if (applyY || applyX)
+						{
+							car.setPosY(carY + carYMove);
+							car.setPosX(carX - carXMove);
+							car.setYMove(-carYMove);
+							car.setXMove(-carXMove);
+
+							car.setCollisionHappened(true);
+						}*/
 						double wallX = sprite.getPosX();
 						double wallY = sprite.getPosY();
 
@@ -252,7 +280,7 @@ public class SpriteHandler extends Vector<Sprite>
 							{
 								car.setPowerUp((SlowDown) sprite);
 							}
-							this.remove(i);
+							this.remove(sprite);
 						}
 					}
 				}

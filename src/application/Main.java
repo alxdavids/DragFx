@@ -120,9 +120,22 @@ public class Main extends Application
 			return style;
 		}
 	}
+	public enum TimeGap {
+		SLOW(0.05),NORMAL(0.1);
+		
+		private double time;
+		
+		private TimeGap(double time)
+		{
+			this.time = time;
+		}
+		public double getTime()
+		{
+			return time;
+		}
+	}
 	
 	public static final int TOP_BUFFER = 200;
-	private static final double TIME_GAP = 0.1;
 	
 	private AnimationTimer animTimer;
 	private Label timerText = null;
@@ -488,9 +501,9 @@ public class Main extends Application
 						double timeToDisplay = time-2;
 						timerText.setText("" + timeToDisplay);
 					}
-					time = time + TIME_GAP;
+					time = time + TimeGap.NORMAL.getTime();
 				}),
-				new KeyFrame(Duration.seconds(TIME_GAP))
+				new KeyFrame(Duration.seconds(TimeGap.NORMAL.getTime()))
 		);
 		timer.setCycleCount(Timeline.INDEFINITE);
 		timer.play();
@@ -1373,7 +1386,7 @@ public class Main extends Application
 		car.setXMove(xMove);
 		
 		SpriteHandler sprites = car.getSprites();
-		// Pass in time-2 as this is the actual time.
+		// Pass in time-2 as this is the actual time that is displayed.
 		sprites.resolveCollisions(time-2);
 		
 		double oldY = car.getPosY();

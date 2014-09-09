@@ -2,8 +2,10 @@ package sprite;
 
 import java.util.Random;
 
-import application.Main;
 import javafx.scene.image.Image;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Rotate;
+import application.Main;
 
 public class Wall extends Sprite
 {
@@ -36,12 +38,19 @@ public class Wall extends Sprite
 		Random rnd = new Random();
 		double rndD = rnd.nextDouble();
 		return  minValue + (rndD*(Road.Dimension.HEIGHT.getValue() - minValue));
-	}
-	
+	}	
 	public static double getRandomXCoordinate()
 	{
 		Random rnd = new Random();
 		double rndD = rnd.nextDouble();
 		return rndD*(Road.Dimension.WIDTH.getValue() - Wall.Dimension.WIDTH.getValue());
+	}
+	
+	public Rectangle getRectangle()
+	{
+		double width = Wall.Dimension.WIDTH.getValue();
+		double height = Wall.Dimension.HEIGHT.getValue();
+		Rectangle rect = new Rectangle(posX, posY, width, height);
+		return rect;
 	}
 }

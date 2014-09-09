@@ -4,6 +4,8 @@ import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Rotate;
 import utils.UpwardProgress;
 import application.Main;
 import application.Player;
@@ -38,7 +40,6 @@ public class Car extends Sprite
 			return value;
 		}
 	}
-
 	public enum Speed {
 		SLOW_MOVEMENT_SPEED(2), NORMAL_MOVEMENT_SPEED(4.5), BOOST_MOVEMENT_SPEED(6.5);
 		
@@ -178,8 +179,7 @@ public class Car extends Sprite
 	public void updateProgressBar()
 	{
 		setProgressBar(1 - (posY - sprites.getTrackEnd())/Main.getTrackDistance());
-	}
-	
+	}	
 	public Player getPlayer()
 	{
 		return player;
@@ -187,8 +187,7 @@ public class Car extends Sprite
 	public void setPlayer(Player player)
 	{
 		this.player = player;
-	}
-	
+	}	
 	public boolean getWinner()
 	{
 		return winner;
@@ -196,8 +195,7 @@ public class Car extends Sprite
 	public void setWinner(boolean winner)
 	{
 		this.winner = winner;
-	}
-	
+	}	
 	public boolean getCollisionHappened()
 	{
 		return collisionHappened;
@@ -214,7 +212,6 @@ public class Car extends Sprite
 	{
 		this.sprites = sprites;
 	}
-	
 	public PowerUp getPowerUp()
 	{
 		return powerUp;
@@ -238,5 +235,14 @@ public class Car extends Sprite
 	public void setTimePowerUpReceived(double time)
 	{
 		this.timePowerUpReceived = time;
+	}
+	
+	public Rectangle getRectangle()
+	{
+		double width = Car.Dimension.WIDTH.getValue();
+		double height = Car.Dimension.HEIGHT.getValue();
+		Rectangle rect = new Rectangle(posX, posY, width, height);
+		rect.getTransforms().add(new Rotate(Math.toRadians(rotation), width/2, height/2));
+		return rect;
 	}
 }
