@@ -155,7 +155,7 @@ public class Main extends Application
 	private Player playerOne = null;
 	private Player playerTwo = null;
 	
-	private static int roadNumberCoefficient = 1; //1 builds zero roads. Decrease to build more rows (see createCarAndRoads())
+	private static int roadNumberCoefficient = 1; //1 builds zero roads. Decrease to build more roads.
 	private static double trackDistance = 0;
 	
 	public void start(Stage primaryStage) 
@@ -393,7 +393,7 @@ public class Main extends Application
 	}
 
 	private void addToLeaderboardEntries(ArrayList<Vector<String>> leaderboardEntries, String nameString,
-							String timeTrimmed)
+										String timeTrimmed)
 	{
 		Vector<String> nameAndTime = new Vector<>();
 		nameAndTime.add(nameString);
@@ -641,6 +641,7 @@ public class Main extends Application
 				}
 				line = br.readLine();
 			}
+			br.close();
 			
 			if (nullLines || !lineAdded)
 			{
@@ -1017,11 +1018,11 @@ public class Main extends Application
 			Image carImage = null;
 			if (playerOne.getCarColor().equals(CarColor.CAR_YELLOW.color))
 			{
-				carImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
+				carImage = new Image(this.getClass().getResource("CarYellow.png").toString());
 			}
 			else
 			{
-				carImage = new Image(this.getClass().getResource("CarPixlrBlue.png").toString());
+				carImage = new Image(this.getClass().getResource("CarBlue.png").toString());
 			}			
 			Car car = new Car(carImage, 147.5, 650, 0, playerOne);			
 			sprites.add(car);
@@ -1029,7 +1030,7 @@ public class Main extends Application
 		}
 		else
 		{
-			Image carOneImage = new Image(this.getClass().getResource("CarPixlr.png").toString());
+			Image carOneImage = new Image(this.getClass().getResource("CarYellow.png").toString());
 			Car carOne = new Car(carOneImage, 147.5, 650, 0, playerOne);
 			
 			sprites.add(carOne);
@@ -1101,7 +1102,7 @@ public class Main extends Application
 		sprites.forEach( (sprite) -> {
 			if (sprite instanceof Car)
 			{				
-				Car car = new Car(new Image(this.getClass().getResource("CarPixlrBlue.png").toString()), 
+				Car car = new Car(new Image(this.getClass().getResource("CarBlue.png").toString()), 
 								sprite.getPosX(), sprite.getPosY(), ((Car) sprite).getRotation(), playerTwo);
 				spritesCopy.add(car);
 			}

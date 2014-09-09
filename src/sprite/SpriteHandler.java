@@ -186,14 +186,13 @@ public class SpriteHandler extends Vector<Sprite>
 					if (sprite instanceof Wall)
 					{
 						// Keep this for now -- working on some different collisions stuff using the intersections of rectangles
-						Rectangle rectCar = car.getRectangle();
+						/*Rectangle rectCar = car.getRectangle();
 						Rectangle rectWall = ((Wall) sprite).getRectangle();
 						
 						boolean intersection = rectCar.intersects(sprite.getPosX(), sprite.getPosY(), 
 																  Wall.Dimension.WIDTH.getValue(), 
 																  Wall.Dimension.HEIGHT.getValue());
-						
-						/*boolean applyX = false;
+						boolean applyX = false;
 						boolean applyY = false;
 						if (intersection)
 						{
@@ -218,7 +217,7 @@ public class SpriteHandler extends Vector<Sprite>
 						double xDiff = Math.abs(carX-wallX);
 
 						if (yDiff < Wall.Dimension.HEIGHT.getValue()
-								&& (xDiff < Wall.Dimension.WIDTH.getValue() && carX + Car.Dimension.HEIGHT.getValue() > wallX))
+						  && (xDiff < Wall.Dimension.WIDTH.getValue() && carX + Car.Dimension.HEIGHT.getValue() > wallX))
 						{
 							boolean applyX = false;
 							boolean applyY = false;
