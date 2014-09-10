@@ -21,7 +21,7 @@ To-do list
 	- e.g. oil slick?
 - ~~Ability to choose longer or shorter race tracks with differing amounts of sprites on top~~
 - Improve look and feel of game in general
-	- Make car look better
+	- ~~Make car look better~~ (happy with how these look for now)
 	- Make different looking race tracks
 	- Improve the appearance of stationary sprites
 	- ~~Improve the winner text~~
@@ -30,7 +30,7 @@ To-do list
 	- ~~Add something to entry screen to allow you to pick~~
 	- More car colours?
 - ~~Leaderboard~~
-- Sound effects for collisions engines etc.
+- Sound effects for collisions/engines etc.
 - ~~Pickups that provide bonuses to the player (faster car, timer slowdown in single player etc.)~~ (Added some but wiill probably want more as time goes on)
 
 
