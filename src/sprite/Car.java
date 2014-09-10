@@ -4,6 +4,7 @@ import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
 import utils.UpwardProgress;
@@ -87,18 +88,36 @@ public class Car extends Sprite
 	{
 		UpwardProgress upwardProgress = new UpwardProgress(15, 692);
 		bar = upwardProgress.getProgressBar();
-		if (player.getCarColor().equals(Main.CarColor.CAR_YELLOW.getColor()))
-		{
-			bar.setStyle("-fx-base: skyblue; -fx-accent: " + Main.CarColorHtml.CAR_YELLOW_HTML.getColorHexCode());
-		}
-		else
-		{
-			bar.setStyle("-fx-base: skyblue; -fx-accent: " + Main.CarColorHtml.CAR_BLUE_HTML.getColorHexCode());
-		}
+		Color carColor = player.getCarColor();
+		setBarColor(carColor);
 		bar.setProgress(0);
 		
 		return upwardProgress.getProgressHolder();
     }
+
+	private void setBarColor(Color carColor)
+	{
+		if (carColor.equals(Main.CarColor.CAR_YELLOW.getColor()))
+		{
+			bar.setStyle("-fx-base: #222; -fx-accent: " + Main.CarColorHtml.CAR_YELLOW_HTML.getColorHexCode());
+		}
+		else if (carColor.equals(Main.CarColor.CAR_BLUE.getColor()))
+		{
+			bar.setStyle("-fx-base: #222; -fx-accent: " + Main.CarColorHtml.CAR_BLUE_HTML.getColorHexCode());
+		}
+		else if (carColor.equals(Main.CarColor.CAR_GREEN.getColor()))
+		{
+			bar.setStyle("-fx-base: #222; -fx-accent: " + Main.CarColorHtml.CAR_GREEN_HTML.getColorHexCode());
+		}
+		else if (carColor.equals(Main.CarColor.CAR_RED.getColor()))
+		{
+			bar.setStyle("-fx-base: #222; -fx-accent: " + Main.CarColorHtml.CAR_RED_HTML.getColorHexCode());
+		}
+		else if (carColor.equals(Main.CarColor.CAR_WHITE.getColor()))
+		{
+			bar.setStyle("-fx-base: #222; -fx-accent: " + Main.CarColorHtml.CAR_WHITE_HTML.getColorHexCode());
+		}
+	}
 	
 	public double getRotation()
 	{

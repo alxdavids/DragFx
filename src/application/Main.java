@@ -65,7 +65,8 @@ public class Main extends Application
 		}
 	}	
 	public enum CarColorHtml {
-		CAR_YELLOW_HTML("#FFC601"), CAR_BLUE_HTML("#2490FB");
+		CAR_YELLOW_HTML("#FFC601"), CAR_BLUE_HTML("#2490FB"), CAR_GREEN_HTML("#51d173"), CAR_RED_HTML("#bf2c40"), 
+		CAR_WHITE_HTML("#ffffff");
 		
 		private String colorHexCode;
 		
@@ -79,7 +80,9 @@ public class Main extends Application
 		}
 	}	
 	public enum CarColor {
-		CAR_YELLOW(CarColorHtml.CAR_YELLOW_HTML.colorHexCode), CAR_BLUE(CarColorHtml.CAR_BLUE_HTML.colorHexCode);
+		CAR_YELLOW(CarColorHtml.CAR_YELLOW_HTML.colorHexCode), CAR_BLUE(CarColorHtml.CAR_BLUE_HTML.colorHexCode), 
+		CAR_GREEN(CarColorHtml.CAR_GREEN_HTML.colorHexCode), CAR_RED(CarColorHtml.CAR_RED_HTML.colorHexCode),
+		CAR_WHITE(CarColorHtml.CAR_WHITE_HTML.colorHexCode);
 		
 		private Color color;
 		
@@ -406,10 +409,11 @@ public class Main extends Application
 		entryGrid.setHgap(10);
 		entryGrid.setVgap(10);
 		entryGrid.setPadding(new Insets(25, 25, 25, 25));
+		entryGrid.setPrefSize(335, 300);
 		
 		initialiseEntryPane(entryGrid, primaryStage);
 		
-		Scene entryScene = new Scene(entryGrid, 300, 275);
+		Scene entryScene = new Scene(entryGrid, 335, 300);
 		entryScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		
 		primaryStage.setScene(entryScene);
@@ -434,7 +438,14 @@ public class Main extends Application
 		topBar.setPadding(new Insets(5, 5, 5, 5));
 		topBar.setVgap(2);
 		topBar.setHgap(10);
-		topBar.setPrefSize(Car.CanvasDimension.GAME_CANVAS_WIDTH.getValue(), 50);
+		if (singlePlayer)
+		{
+			topBar.setPrefSize(Car.CanvasDimension.GAME_CANVAS_WIDTH.getValue(), 50);
+		}
+		else
+		{
+			topBar.setPrefSize(Car.CanvasDimension.GAME_CANVAS_WIDTH.getValue(), 50);
+		}
 		
 		timerText = new Label();
 		timerText.setId("timer-text");
@@ -734,54 +745,62 @@ public class Main extends Application
 		nameOneTextField.setMaxLength(12);
 		entryGrid.add(nameOneTextField, 1, 1);
 		
+		ComboBox<Color> cmbP1 = addCarColorComboBox();
+		Label lblP1 = new Label("Choose car colour for player 1: ");
+		entryGrid.add(new HBox(lblP1, cmbP1), 0, 2, 2, 1);
+		
 		Label nameTwo = new Label("Player two name:");
-		entryGrid.add(nameTwo, 0, 2);
+		entryGrid.add(nameTwo, 0, 3);
 		
 		RestrictiveTextField nameTwoTextField = new RestrictiveTextField();
 		nameTwoTextField.setMaxLength(12);
-		entryGrid.add(nameTwoTextField, 1, 2);
+		entryGrid.add(nameTwoTextField, 1, 3);
+		
+		ComboBox<Color> cmbP2 = addCarColorComboBox();
+		Label lblP2 = new Label("Choose car colour for player 2: ");
+		entryGrid.add(new HBox(lblP2, cmbP2), 0, 4, 2, 1);
 		
 		Button btnLong = new Button("Long game");
 		HBox hbBtnLong = new HBox(10);
 		hbBtnLong.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtnLong.getChildren().add(btnLong);
-		entryGrid.add(hbBtnLong, 1, 3);
+		entryGrid.add(hbBtnLong, 1, 5);
 		
 		Button btnShort = new Button("Short game");
 		btnShort.setDefaultButton(true);
 		HBox hbBtnShort = new HBox(10);
 		hbBtnShort.setAlignment(Pos.BOTTOM_LEFT);
 		hbBtnShort.getChildren().add(btnShort);
-		entryGrid.add(hbBtnShort, 0, 3);
+		entryGrid.add(hbBtnShort, 0, 5);
 		
 		final Text playerInstruction = new Text();
 		playerInstruction.setText("Player one uses WAD controls.");
-		entryGrid.add(playerInstruction, 0, 4, 2, 1);		
+		entryGrid.add(playerInstruction, 0, 6, 2, 1);		
 		
 		Button btnMainMenu = new Button("Main menu");
 		HBox hbBtnMainMenu = new HBox(10);
 		hbBtnMainMenu.getChildren().add(btnMainMenu);
 		hbBtnMainMenu.setAlignment(Pos.BOTTOM_RIGHT);
-		entryGrid.add(hbBtnMainMenu, 1, 5);
+		entryGrid.add(hbBtnMainMenu, 1, 7);
 		
 		setMainMenuButtonAction(btnMainMenu, primaryStage);	
 		
 		final Text errorAction = new Text();
-        entryGrid.add(errorAction, 0, 6, 2, 1);
+        entryGrid.add(errorAction, 0, 8, 2, 1);
 		
-        setMultiPlayerButtonActions(primaryStage, nameOneTextField, nameTwoTextField, btnLong, btnShort, errorAction);
+        setMultiPlayerButtonActions(primaryStage, nameOneTextField, nameTwoTextField, btnLong, btnShort, errorAction, cmbP1, cmbP2);
 	}
 
 	private void setMultiPlayerButtonActions(Stage primaryStage, RestrictiveTextField nameOneTextField, RestrictiveTextField nameTwoTextField, Button btnLong, 
-								Button btnShort, Text errorAction)
+								Button btnShort, Text errorAction, ComboBox<Color> cmbP1, ComboBox<Color> cmbP2)
 	{
 		btnLong.setOnAction( (e) -> {
 			longGame = true;
-			initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
+			initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction, cmbP1, cmbP2);
 		});
 		
 		btnShort.setOnAction( (e) -> {
-			initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction);
+			initialiseMultiPlayerGame(primaryStage, nameOneTextField, nameTwoTextField, errorAction, cmbP1, cmbP2);
 		});
 	}
 	
@@ -797,7 +816,9 @@ public class Main extends Application
 		CheckBox cBox = new CheckBox("Use WAD controls");
 		entryGrid.add(cBox, 0, 4, 2, 1);
 		
-		ComboBox<Color> cmb = addCarColorComboBox(entryGrid);
+		ComboBox<Color> cmb = addCarColorComboBox();        
+        Label lbl = new Label("Choose car colour: ");        
+        entryGrid.add(new HBox(lbl, cmb), 0, 5, 2, 1);
 		
 		Button btnLong = new Button("Long game");
 		HBox hbBtnLong = new HBox(10);
@@ -826,10 +847,12 @@ public class Main extends Application
 		setSinglePlayerButtonActions(primaryStage, nameTextField, btnLong, btnShort, cBox, errorAction, cmb);
 	}
 
-	private ComboBox<Color> addCarColorComboBox(GridPane entryGrid)
+	private ComboBox<Color> addCarColorComboBox()
 	{		
 		ComboBox<Color> cmb = new ComboBox<Color>();
-        cmb.getItems().addAll(CarColor.CAR_YELLOW.color, CarColor.CAR_BLUE.color);
+        cmb.getItems().addAll(CarColor.CAR_YELLOW.color, CarColor.CAR_BLUE.color, 
+        					CarColor.CAR_GREEN.color, CarColor.CAR_RED.color,
+        					CarColor.CAR_WHITE.color);
         
         cmb.setCellFactory(new Callback<ListView<Color>, ListCell<Color>>() {
         	public ListCell<Color> call(ListView<Color> p) 
@@ -861,10 +884,6 @@ public class Main extends Application
         
         //render selected colour in combo box
         cmb.setButtonCell(cmb.getCellFactory().call(null));
-        
-        Label lbl = new Label("Choose car colour: ");
-        
-        entryGrid.add(new HBox(lbl, cmb), 0, 5, 2, 1);
         
         return cmb;
 	}
@@ -915,7 +934,8 @@ public class Main extends Application
 		startGame(primaryStage);
 	}	
 
-	private void initialiseMultiPlayerGame(Stage primaryStage, RestrictiveTextField nameOneTextField, RestrictiveTextField nameTwoTextField, Text errorAction)
+	private void initialiseMultiPlayerGame(Stage primaryStage, RestrictiveTextField nameOneTextField, RestrictiveTextField nameTwoTextField, Text errorAction, 
+										ComboBox<Color> cmbP1, ComboBox<Color> cmbP2)
 	{
 		errorAction.setText("");
 		errorAction.setFill(Color.FIREBRICK);
@@ -937,9 +957,22 @@ public class Main extends Application
 			return;
 		}
 		
+		Color colorP1 = cmbP1.getValue();
+		Color colorP2 = cmbP2.getValue();
+		if (colorP1 == null || colorP2 == null)
+		{
+			errorAction.setText("Both players haven't selected a colour for their cars");
+			return;
+		}
+		else if (colorP1.equals(colorP2))
+		{
+			errorAction.setText("Players must select different colours");
+			return;
+		}
+		
 		playerOne.setUseAlternateControls(true);
-		playerOne.setCarColor(CarColor.CAR_YELLOW.color);
-		playerTwo.setCarColor(CarColor.CAR_BLUE.color);
+		playerOne.setCarColor(colorP1);
+		playerTwo.setCarColor(colorP2);
 		
 		playerOne.setName(nameOne);
 		playerTwo.setName(nameTwo);
@@ -1011,30 +1044,13 @@ public class Main extends Application
 		SpriteHandler sprites = new SpriteHandler(roadNumberCoefficient);
 		SpriteHandler spritesCopy = null;
 		cars = new Vector<>();
-		if (singlePlayer)
-		{
-			Image carImage = null;
-			if (playerOne.getCarColor().equals(CarColor.CAR_YELLOW.color))
-			{
-				carImage = new Image(this.getClass().getResource("CarYellow.png").toString());
-			}
-			else
-			{
-				carImage = new Image(this.getClass().getResource("CarBlue.png").toString());
-			}			
-			Car car = new Car(carImage, 147.5, 650, 0, playerOne);			
-			sprites.add(car);
-			cars.add(car);
-		}
-		else
-		{
-			Image carOneImage = new Image(this.getClass().getResource("CarYellow.png").toString());
-			Car carOne = new Car(carOneImage, 147.5, 650, 0, playerOne);
-			
-			sprites.add(carOne);
-			cars.add(carOne);
-		}
-		
+
+		Color carColor = playerOne.getCarColor();
+		Image carImage = setCarColor(carColor);
+		Car car = new Car(carImage, 147.5, 650, 0, playerOne);			
+		sprites.add(car);
+		cars.add(car);
+
 		Image roadImage = new Image(this.getClass().getResource("Road.png").toString());
 		Image wallImage = new Image(this.getClass().getResource("Wall.png").toString());
 		Image finishLineImage = new Image(this.getClass().getResource("FinishLine.png").toString());
@@ -1048,7 +1064,6 @@ public class Main extends Application
 		addPowerUps(boostImage, slowDownImage, sprites);
 		checkSpritesArePlacedCorrectly(sprites);
 
-		Car car = cars.elementAt(0);
 		car.setSprites(sprites);
 		
 		if (!singlePlayer)
@@ -1058,6 +1073,32 @@ public class Main extends Application
 			cars.add(carTwo);
 			carTwo.setSprites(spritesCopy);
 		}				
+	}
+
+	private Image setCarColor(Color carColor)
+	{
+		Image carImage = null;
+		if (carColor.equals(CarColor.CAR_YELLOW.color))
+		{
+			carImage = new Image(this.getClass().getResource("CarYellow.png").toString());
+		}
+		else if (carColor.equals(CarColor.CAR_BLUE.color))
+		{
+			carImage = new Image(this.getClass().getResource("CarBlue.png").toString());
+		}			
+		else if (carColor.equals(CarColor.CAR_GREEN.color))
+		{
+			carImage = new Image(this.getClass().getResource("CarGreen.png").toString());
+		}
+		else if (carColor.equals(CarColor.CAR_RED.color))
+		{
+			carImage = new Image(this.getClass().getResource("CarRed.png").toString());
+		}
+		else if (carColor.equals(CarColor.CAR_WHITE.color))
+		{
+			carImage = new Image(this.getClass().getResource("CarWhite.png").toString());
+		}
+		return carImage;
 	}
 
 	private void addPowerUps(Image boostImage, Image slowDownImage,
@@ -1100,8 +1141,9 @@ public class Main extends Application
 		sprites.forEach( (sprite) -> {
 			if (sprite instanceof Car)
 			{				
-				Car car = new Car(new Image(this.getClass().getResource("CarBlue.png").toString()), 
-								sprite.getPosX(), sprite.getPosY(), ((Car) sprite).getRotation(), playerTwo);
+				Color carColor = playerTwo.getCarColor();
+				Image carImage = setCarColor(carColor);
+				Car car = new Car(carImage, sprite.getPosX(), sprite.getPosY(), ((Car) sprite).getRotation(), playerTwo);
 				spritesCopy.add(car);
 			}
 			else if (sprite instanceof Road)
