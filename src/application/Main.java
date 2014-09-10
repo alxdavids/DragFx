@@ -139,7 +139,6 @@ public class Main extends Application
 	
 	private AnimationTimer animTimer;
 	private Label timerText = null;
-	private boolean endOfTrack = false;
 	private boolean longGame = false;
 	private static boolean gameWon = false;
 	private boolean testMode = false;
@@ -325,7 +324,6 @@ public class Main extends Application
 	private void resetVariables()
 	{
 		gameWon = false;
-		endOfTrack = false;
 		time = 0;
 		started = false;
 		winnerName = "";
@@ -523,7 +521,7 @@ public class Main extends Application
 			cars.forEach( (car) -> {
 				setSpeedForCar(car);								
 				updatePosition(car);
-				if (car.getCarCloseToTop() && !endOfTrack)
+				if (car.getCarCloseToTop() && !car.getReachedEndOfTrack())
 				{
 					scrollScreen(car, car.getSprites());
 				}
@@ -1208,7 +1206,7 @@ public class Main extends Application
 		
 		if (reachedEndOfTrack)
 		{
-			endOfTrack = true;
+			car.setReachedEndOfTrack(true);
 		}
 	}
 
@@ -1234,11 +1232,21 @@ public class Main extends Application
 			{
 				if (checkCar.getWinner())
 				{
+					Label winnerText = new Label();
+					winnerText.setId("winner-text");
 					winnerName = checkCar.getPlayer().getName();
-					Label winnerText = new Label( winnerName + " is the winner!");
-					winnerText.setId("winner-text");	
+					
+					if (singlePlayer)
+					{
+						winnerText.setText("Good time " + winnerName + "!");
+					}
+					else
+					{
+						winnerText.setText(winnerName + " is the winner!");
+					}
+						
 					topBar.add(winnerText, 0, 1, 2, 1);
-				}
+				}				
 			}
 		}
 

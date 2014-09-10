@@ -72,6 +72,7 @@ public class Car extends Sprite
 	private PowerUp powerUp = null;
 	private double currentSpeed = 0;
 	private double timePowerUpReceived = 0;
+	private boolean reachedEndOfTrack = false;
 	
 	public Car(Image image, double posX, double posY, double rotation, Player player)
 	{
@@ -235,8 +236,7 @@ public class Car extends Sprite
 	public void setTimePowerUpReceived(double time)
 	{
 		this.timePowerUpReceived = time;
-	}
-	
+	}	
 	public Rectangle getRectangle()
 	{
 		double width = Car.Dimension.WIDTH.getValue();
@@ -244,5 +244,13 @@ public class Car extends Sprite
 		Rectangle rect = new Rectangle(posX, posY, width, height);
 		rect.getTransforms().add(new Rotate(Math.toRadians(rotation), width/2, height/2));
 		return rect;
+	}
+	public boolean getReachedEndOfTrack()
+	{
+		return reachedEndOfTrack;
+	}
+	public void setReachedEndOfTrack(boolean reachedEndOfTrack)
+	{
+		this.reachedEndOfTrack = reachedEndOfTrack;
 	}
 }
