@@ -330,6 +330,7 @@ public class Main extends Application
 		time = 0;
 		started = false;
 		winnerName = "";
+		longGame = false;
 	}
 
 	private void setViewButtonActions(Button btnShortTimes, Button btnLongTimes, Stage primaryStage)
