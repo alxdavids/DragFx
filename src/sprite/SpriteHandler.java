@@ -151,7 +151,7 @@ public class SpriteHandler extends Vector<Sprite>
 			}
 			else if (sprite instanceof PowerUp)
 			{
-				rndY = PowerUp.getRandomYCoordinate(Main.getRoadNumberCoefficient() + 1);
+				rndY = PowerUp.getRandomYCoordinate(Main.getRoadNumberCoefficient());
 				rndX = PowerUp.getRandomXCoordinate();
 			}
 			
@@ -278,6 +278,10 @@ public class SpriteHandler extends Vector<Sprite>
 							else if (sprite instanceof SlowDown)
 							{
 								car.setPowerUp((SlowDown) sprite);
+							}
+							else if (sprite instanceof TimeSlow)
+							{
+								car.setPowerUp((TimeSlow) sprite);
 							}
 							this.remove(sprite);
 						}

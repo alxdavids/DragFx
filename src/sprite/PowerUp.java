@@ -28,7 +28,7 @@ public class PowerUp extends Sprite
 	
 	public static double getRandomYCoordinate(int roadNumberCoefficient)
 	{
-		double minValue = roadNumberCoefficient*Road.Dimension.HEIGHT.getValue() + Main.TOP_BUFFER/2;
+		double minValue = (roadNumberCoefficient+1)*Road.Dimension.HEIGHT.getValue() + Main.TOP_BUFFER/2;
 		Random rnd = new Random();
 		double rndD = rnd.nextDouble();
 		return  minValue + (rndD*(Road.Dimension.HEIGHT.getValue() - minValue));

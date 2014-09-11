@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javafx.animation.AnimationTimer;
@@ -48,6 +49,7 @@ import sprite.Road;
 import sprite.SlowDown;
 import sprite.Sprite;
 import sprite.SpriteHandler;
+import sprite.TimeSlow;
 import sprite.Wall;
 import utils.RestrictiveTextField;
 
@@ -124,7 +126,7 @@ public class Main extends Application
 		}
 	}
 	public enum TimeGap {
-		SLOW(0.05),NORMAL(0.1);
+		SLOW(0.01),NORMAL(0.1);
 		
 		private double time;
 		
@@ -147,10 +149,12 @@ public class Main extends Application
 	private boolean testMode = false;
 	private double time = 0;
 	private Timeline timer = null;
+	private double raceTime = 0;
 	private GridPane topBar = null;
 	private Vector<Car> cars = null;
 	private boolean started = false;
 	private String winnerName = "";
+	private double timeGap = TimeGap.NORMAL.getTime();
 	
 	private static boolean singlePlayer = true;
 	
@@ -331,6 +335,8 @@ public class Main extends Application
 		started = false;
 		winnerName = "";
 		longGame = false;
+		timeGap = TimeGap.NORMAL.getTime();
+		raceTime = 0;
 	}
 
 	private void setViewButtonActions(Button btnShortTimes, Button btnLongTimes, Stage primaryStage)
@@ -510,8 +516,9 @@ public class Main extends Application
 						}
 						double timeToDisplay = time-2;
 						timerText.setText("" + timeToDisplay);
+						raceTime = raceTime + 0.1;
 					}
-					time = time + TimeGap.NORMAL.getTime();
+					time = time + timeGap;
 				}),
 				new KeyFrame(Duration.seconds(TimeGap.NORMAL.getTime()))
 		);
@@ -531,7 +538,7 @@ public class Main extends Application
 		if (!gameWon)
 		{			
 			cars.forEach( (car) -> {
-				setSpeedForCar(car);								
+				setPowerUpForCar(car);								
 				updatePosition(car);
 				if (car.getCarCloseToTop() && !car.getReachedEndOfTrack())
 				{
@@ -553,14 +560,14 @@ public class Main extends Application
 		}
 	}
 
-	private void setSpeedForCar(Car car)
+	private void setPowerUpForCar(Car car)
 	{
 		PowerUp powerUp = car.getPowerUp();
 		if (powerUp != null)
 		{
 			// +5 allows power ups to be in action for 5 seconds (since time is 2 seconds behind 
 			// the time game has been running for.
-			if (car.getTimePowerUpReceived()+5 > time)
+			if (car.getTimePowerUpReceived()+3 > raceTime)
 			{
 				if (powerUp instanceof Boost)
 				{
@@ -570,11 +577,16 @@ public class Main extends Application
 				{
 					car.setCurrentSpeed(Car.Speed.SLOW_MOVEMENT_SPEED.getValue());
 				}
+				else if (powerUp instanceof TimeSlow)
+				{
+					setTimeGap(TimeGap.SLOW.getTime());
+				}
 			}
 			else
 			{
 				car.setPowerUp(null);
 				car.setCurrentSpeed(Car.Speed.NORMAL_MOVEMENT_SPEED.getValue());
+				setTimeGap(TimeGap.NORMAL.getTime());
 			}
 		}
 		else
@@ -1055,14 +1067,12 @@ public class Main extends Application
 		Image roadImage = new Image(this.getClass().getResource("Road.png").toString());
 		Image wallImage = new Image(this.getClass().getResource("Wall.png").toString());
 		Image finishLineImage = new Image(this.getClass().getResource("FinishLine.png").toString());
-		Image boostImage = new Image(this.getClass().getResource("SpeedBoost.png").toString());
-		Image slowDownImage = new Image(this.getClass().getResource("SpeedSlowDown.png").toString()); 
 				
 		//Remember that anything that you want to add here also has to be added to the method that draws the components
 		addRoads(roadImage, sprites);		
 		addWalls(wallImage, sprites);				
 		addFinishLine(finishLineImage, sprites);
-		addPowerUps(boostImage, slowDownImage, sprites);
+		addPowerUps(sprites);
 		checkSpritesArePlacedCorrectly(sprites);
 
 		car.setSprites(sprites);
@@ -1102,36 +1112,71 @@ public class Main extends Application
 		return carImage;
 	}
 
-	private void addPowerUps(Image boostImage, Image slowDownImage,
-			SpriteHandler sprites)
-	{
-		double numberOfBoosts = (Math.abs(roadNumberCoefficient)/3);
-		if (numberOfBoosts == 0)
+	private void addPowerUps(SpriteHandler sprites)
+	{			
+		addBoosts(sprites);		
+		addSlowDowns(sprites);
+		
+		if (singlePlayer)
 		{
-			numberOfBoosts = 1;
+			addTimeSlows(sprites);
+		}
+	}
+
+	private void addTimeSlows(SpriteHandler sprites)
+	{
+		Image tsImage = new Image(this.getClass().getResource("TimeSlow.png").toString());
+		double numberOfTimeSlows = (Math.abs(roadNumberCoefficient)/5);
+		if (testMode
+		  && numberOfTimeSlows == 0)
+		{
+			numberOfTimeSlows = 1;
 		}
 		
-		for (int i=0; i<numberOfBoosts; i++)
+		for (int i=0; i<numberOfTimeSlows; i++)
 		{
-			double rndY = Boost.getRandomYCoordinate(roadNumberCoefficient + 1);
-			double rndX = Boost.getRandomXCoordinate();
-						
-			Boost boost = new Boost(boostImage, rndX, rndY);
-			sprites.add(boost);
+			double rndY = TimeSlow.getRandomYCoordinate(roadNumberCoefficient);
+			double rndX = TimeSlow.getRandomXCoordinate();
+			
+			TimeSlow ts = new TimeSlow(tsImage, rndX, rndY);
+			sprites.add(ts);
 		}
+	}
+
+	private void addSlowDowns(SpriteHandler sprites)
+	{
+		Image slowDownImage = new Image(this.getClass().getResource("SpeedSlowDown.png").toString());
 		double numberOfSlowdowns = (Math.abs(roadNumberCoefficient)/4);
 		if (numberOfSlowdowns == 0)
 		{
 			numberOfSlowdowns = 1;
 		}
 
-		for (int i=0; i<numberOfBoosts; i++)
+		for (int i=0; i<numberOfSlowdowns; i++)
 		{
-			double rndY = SlowDown.getRandomYCoordinate(roadNumberCoefficient + 1);
+			double rndY = SlowDown.getRandomYCoordinate(roadNumberCoefficient);
 			double rndX = SlowDown.getRandomXCoordinate();
 
 			SlowDown slowDown = new SlowDown(slowDownImage, rndX, rndY);
 			sprites.add(slowDown);
+		}
+	}
+
+	private void addBoosts(SpriteHandler sprites)
+	{
+		Image boostImage = new Image(this.getClass().getResource("SpeedBoost.png").toString());
+		double numberOfBoosts = (Math.abs(roadNumberCoefficient)/3);
+		if (numberOfBoosts == 0)
+		{
+			numberOfBoosts = 1;
+		}		
+		for (int i=0; i<numberOfBoosts; i++)
+		{
+			double rndY = Boost.getRandomYCoordinate(roadNumberCoefficient);
+			double rndX = Boost.getRandomXCoordinate();
+						
+			Boost boost = new Boost(boostImage, rndX, rndY);
+			sprites.add(boost);
 		}
 	}
 
@@ -1170,6 +1215,11 @@ public class Main extends Application
 			else if (sprite instanceof SlowDown)
 			{
 				SlowDown powerUp = new SlowDown(sprite.getImage(), sprite.getPosX(), sprite.getPosY());
+				spritesCopy.add(powerUp);
+			}
+			else if (sprite instanceof TimeSlow)
+			{
+				TimeSlow powerUp = new TimeSlow(sprite.getImage(), sprite.getPosX(), sprite.getPosY());
 				spritesCopy.add(powerUp);
 			}
 		});
@@ -1480,5 +1530,14 @@ public class Main extends Application
 	public static double getTrackDistance()
 	{
 		return trackDistance;
+	}
+	
+	public double getTimeGap()
+	{
+		return timeGap;
+	}
+	public void setTimeGap(double timeGap)
+	{
+		this.timeGap = timeGap;
 	}
 }

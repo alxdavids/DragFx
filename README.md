@@ -7,7 +7,7 @@ To-do list
 ==========
 
 - ~~Create a GUI for the entry point of the game.~~
-	- Make GUI nicer (add css and allow you to choose single player and multiplayer games)
+	- Make GUI nicer (add some more css)
 - ~~Two player game on same computer~~ (Two players on same screen but isn't ready for playing yet)
 	- Drag mode where players play until one car is left off the screen.
 	- ~~Classic mode where players race to a finish line (will need a split screen)~~
@@ -33,9 +33,11 @@ To-do list
 - Sound effects for collisions/engines etc.
 - ~~Pickups that provide bonuses to the player (faster car, timer slowdown in single player etc.)~~ (Added some but wiill probably want more as time goes on)
 - More players with cars able to finish in position.
+- Improve time slow image
 
 
 (Much Later)
 - server & client
 	- lobby with chat room
 	- ability to play against other people with connections to the same server.
+	- global leaderboard
