@@ -185,31 +185,50 @@ public class SpriteHandler extends Vector<Sprite>
 					Sprite sprite = this.elementAt(i);
 					if (sprite instanceof Wall)
 					{
-						// Keep this for now -- working on some different collisions stuff using the intersections of rectangles
-						/*Rectangle rectCar = car.getRectangle();
+						/*// Keep this for now -- working on some different collisions stuff using the intersections of rectangles
+						Rectangle rectCar = car.getRectangle();
 						Rectangle rectWall = ((Wall) sprite).getRectangle();
 						
 						boolean intersection = rectCar.intersects(sprite.getPosX(), sprite.getPosY(), 
 																  Wall.Dimension.WIDTH.getValue(), 
 																  Wall.Dimension.HEIGHT.getValue());
-						boolean applyX = false;
-						boolean applyY = false;
+						double wallX = rectWall.getX();
+						double wallY = rectWall.getY();
+						double yDiff = Math.abs(carY-wallY);
+						double xDiff = Math.abs(carX-wallX);
+
 						if (intersection)
 						{
-							applyY = (rectCar.getY() < rectWall.getY() && car.getYMove() > 0)
-								       || (rectCar.getY() > rectWall.getY() && car.getYMove() < 0);
-							applyX = (rectCar.getX() < rectWall.getX() && car.getXMove() > 0)
-								       || (rectCar.getX() > rectWall.getX() && car.getXMove() < 0);
-						}						
-						if (applyY || applyX)
-						{
-							car.setPosY(carY + carYMove);
-							car.setPosX(carX - carXMove);
-							car.setYMove(-carYMove);
-							car.setXMove(-carXMove);
+							boolean applyX = false;
+							boolean applyY = false;
+							if (Wall.Dimension.HEIGHT.getValue() - yDiff > Wall.Dimension.WIDTH.getValue() - xDiff - Car.Dimension.HEIGHT.getValue()/2)
+							{
+								if ((carX < wallX && carXMove > 0)
+										|| (carX > wallX && carXMove < 0))
+								{
+									applyX = true;
+								}
+							}
+							else if (Wall.Dimension.WIDTH.getValue() - xDiff > Wall.Dimension.HEIGHT.getValue() - yDiff - Car.Dimension.HEIGHT.getValue()/2)
+							{
+								if ((carY < wallY && carYMove < 0)
+										|| (carY > wallY && carYMove > 0 && ((xDiff < Car.Dimension.WIDTH.getValue()) || (carX > wallX))))
+								{
+									applyY = true;
+								}
+							}
 
-							car.setCollisionHappened(true);
+							if (applyY || applyX)
+							{
+								car.setPosY(carY + carYMove);
+								car.setPosX(carX - carXMove);
+								car.setYMove(-carYMove);
+								car.setXMove(-carXMove);
+
+								car.setCollisionHappened(true);
+							}
 						}*/
+						
 						double wallX = sprite.getPosX();
 						double wallY = sprite.getPosY();
 
