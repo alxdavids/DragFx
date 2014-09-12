@@ -2,7 +2,6 @@ package sprite;
 
 import java.util.Vector;
 
-import javafx.geometry.Rectangle2D;
 import javafx.scene.shape.Rectangle;
 import application.Main;
 
