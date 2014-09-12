@@ -564,6 +564,9 @@ public class Main extends Application
 
 	private void setPowerUpForCar(Car car)
 	{
+		car.setSpeedAlreadySet(false);
+		car.setTimeForPreviousSpeed(0);
+		
 		ConcurrentHashMap<PowerUp,Double> powerUps = car.getPowerUps();
 		if (!powerUps.isEmpty())
 		{
@@ -575,11 +578,11 @@ public class Main extends Application
 				{
 					if (powerUp instanceof Boost)
 					{
-						car.setCurrentSpeed(Car.Speed.BOOST_MOVEMENT_SPEED.getValue());
+						changeCarSpeed(car, time, Car.Speed.BOOST_MOVEMENT_SPEED.getValue());
 					}		
 					else if (powerUp instanceof SlowDown)
 					{
-						car.setCurrentSpeed(Car.Speed.SLOW_MOVEMENT_SPEED.getValue());
+						changeCarSpeed(car, time, Car.Speed.SLOW_MOVEMENT_SPEED.getValue());
 					}
 					else if (powerUp instanceof TimeSlow)
 					{
@@ -604,6 +607,24 @@ public class Main extends Application
 		else
 		{
 			car.setCurrentSpeed(Speed.NORMAL_MOVEMENT_SPEED.getValue());
+		}
+	}
+
+	private void changeCarSpeed(Car car, Double time, double speed)
+	{
+		if (!car.getSpeedAlreadySet())
+		{
+			car.setCurrentSpeed(speed);
+			car.setSpeedAlreadySet(true);
+			car.setTimeForPreviousSpeed(time);
+		}
+		else
+		{
+			if (time > car.getTimeForPreviousSpeed())
+			{
+				car.setCurrentSpeed(speed);
+				car.setTimeForPreviousSpeed(time);
+			}
 		}
 	}	
 	

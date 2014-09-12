@@ -75,6 +75,8 @@ public class Car extends Sprite
 	private ConcurrentHashMap<PowerUp,Double> powerUps = new ConcurrentHashMap<>();
 	private double currentSpeed = 0;
 	private boolean reachedEndOfTrack = false;
+	private boolean speedAlreadySet = false;
+	private double timeForPreviousSpeed = 0;
 	
 	public Car(Image image, double posX, double posY, double rotation, Player player)
 	{
@@ -264,5 +266,21 @@ public class Car extends Sprite
 	public void setReachedEndOfTrack(boolean reachedEndOfTrack)
 	{
 		this.reachedEndOfTrack = reachedEndOfTrack;
+	}
+	public boolean getSpeedAlreadySet()
+	{
+		return speedAlreadySet;
+	}
+	public void setSpeedAlreadySet(boolean speedAlreadySet)
+	{
+		this.speedAlreadySet = speedAlreadySet;
+	}
+	public double getTimeForPreviousSpeed()
+	{
+		return timeForPreviousSpeed;
+	}
+	public void setTimeForPreviousSpeed(double time)
+	{
+		this.timeForPreviousSpeed = time;
 	}
 }
