@@ -1,6 +1,6 @@
 package sprite;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
@@ -72,7 +72,7 @@ public class Car extends Sprite
 									CanvasDimension.GAME_CANVAS_HEIGHT.getValue());
 	private boolean collisionHappened = false;
 	private SpriteHandler sprites = null;
-	private HashMap<PowerUp,Double> powerUps = new HashMap<>();
+	private ConcurrentHashMap<PowerUp,Double> powerUps = new ConcurrentHashMap<>();
 	private double currentSpeed = 0;
 	private boolean reachedEndOfTrack = false;
 	
@@ -233,7 +233,7 @@ public class Car extends Sprite
 	{
 		this.sprites = sprites;
 	}
-	public HashMap<PowerUp,Double> getPowerUps()
+	public ConcurrentHashMap<PowerUp,Double> getPowerUps()
 	{
 		return powerUps;
 	}

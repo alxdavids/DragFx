@@ -7,8 +7,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
@@ -564,7 +564,7 @@ public class Main extends Application
 
 	private void setPowerUpForCar(Car car)
 	{
-		HashMap<PowerUp,Double> powerUps = car.getPowerUps();
+		ConcurrentHashMap<PowerUp,Double> powerUps = car.getPowerUps();
 		if (!powerUps.isEmpty())
 		{
 			//Concurrent modification exception
@@ -1501,7 +1501,7 @@ public class Main extends Application
 		
 		SpriteHandler sprites = car.getSprites();
 		// Pass in time-2 as this is the actual time that is displayed.
-		sprites.resolveCollisions(time-2);
+		sprites.resolveCollisions(raceTime);
 		
 		double oldY = car.getPosY();
 		double newY = oldY - yMove;
