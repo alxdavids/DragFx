@@ -34,6 +34,7 @@ To-do list
 - ~~Pickups that provide bonuses to the player (faster car, timer slowdown in single player etc.)~~ (Added some but wiill probably want more as time goes on)
 - More players with cars able to finish in position. (Keyboard limitations should be considered)
 - ~~Improve time slow image~~
+- ~~Store power ups in a hash map~~
 
 
 (Much Later)
