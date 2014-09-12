@@ -567,6 +567,7 @@ public class Main extends Application
 		HashMap<PowerUp,Double> powerUps = car.getPowerUps();
 		if (!powerUps.isEmpty())
 		{
+			//Concurrent modification exception
 			powerUps.forEach( (powerUp, time) -> {
 				// +5 allows power ups to be in action for 5 seconds (since time is 2 seconds behind 
 				// the time game has been running for.
