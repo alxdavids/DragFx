@@ -1,5 +1,7 @@
 package sprite;
 
+import java.util.HashMap;
+
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ProgressIndicator;
@@ -70,9 +72,8 @@ public class Car extends Sprite
 									CanvasDimension.GAME_CANVAS_HEIGHT.getValue());
 	private boolean collisionHappened = false;
 	private SpriteHandler sprites = null;
-	private PowerUp powerUp = null;
+	private HashMap<PowerUp,Double> powerUps = new HashMap<>();
 	private double currentSpeed = 0;
-	private double timePowerUpReceived = 0;
 	private boolean reachedEndOfTrack = false;
 	
 	public Car(Image image, double posX, double posY, double rotation, Player player)
@@ -232,13 +233,13 @@ public class Car extends Sprite
 	{
 		this.sprites = sprites;
 	}
-	public PowerUp getPowerUp()
+	public HashMap<PowerUp,Double> getPowerUps()
 	{
-		return powerUp;
+		return powerUps;
 	}
-	public void setPowerUp(PowerUp powerUp)
+	public void addPowerUp(PowerUp powerUp, double time)
 	{
-		this.powerUp = powerUp;
+		powerUps.put(powerUp, time);
 	}
 	public double getCurrentSpeed()
 	{
@@ -248,14 +249,6 @@ public class Car extends Sprite
 	{
 		this.currentSpeed = currentSpeed;
 	}
-	public double getTimePowerUpReceived()
-	{
-		return timePowerUpReceived;
-	}
-	public void setTimePowerUpReceived(double time)
-	{
-		this.timePowerUpReceived = time;
-	}	
 	public Rectangle getRectangle()
 	{
 		double width = Car.Dimension.WIDTH.getValue();

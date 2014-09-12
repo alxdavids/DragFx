@@ -289,18 +289,17 @@ public class SpriteHandler extends Vector<Sprite>
 						if (xDiff < PowerUp.Dimension.WIDTH.getValue()
 						  && yDiff < PowerUp.Dimension.HEIGHT.getValue())
 						{
-							car.setTimePowerUpReceived(time);
 							if (sprite instanceof Boost)
 							{
-								car.setPowerUp((Boost) sprite);
+								car.addPowerUp((Boost) sprite, time);
 							}
 							else if (sprite instanceof SlowDown)
 							{
-								car.setPowerUp((SlowDown) sprite);
+								car.addPowerUp((SlowDown) sprite, time);
 							}
 							else if (sprite instanceof TimeSlow)
 							{
-								car.setPowerUp((TimeSlow) sprite);
+								car.addPowerUp((TimeSlow) sprite, time);
 							}
 							this.remove(sprite);
 						}

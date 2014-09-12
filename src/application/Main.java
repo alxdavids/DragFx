@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javafx.animation.AnimationTimer;
@@ -42,6 +43,7 @@ import javafx.util.Callback;
 import javafx.util.Duration;
 import sprite.Boost;
 import sprite.Car;
+import sprite.Car.Speed;
 import sprite.FinishLine;
 import sprite.PowerUp;
 import sprite.Road;
@@ -55,6 +57,7 @@ import utils.RestrictiveTextField;
 
 public class Main extends Application 
 {
+	//If these change you should probably think about resetting the leaderboard.
 	public enum GameLength {
 		LONG(-15), SHORT(-8);
 		
@@ -561,36 +564,45 @@ public class Main extends Application
 
 	private void setPowerUpForCar(Car car)
 	{
-		PowerUp powerUp = car.getPowerUp();
-		if (powerUp != null)
+		HashMap<PowerUp,Double> powerUps = car.getPowerUps();
+		if (!powerUps.isEmpty())
 		{
-			// +5 allows power ups to be in action for 5 seconds (since time is 2 seconds behind 
-			// the time game has been running for.
-			if (car.getTimePowerUpReceived()+3 > raceTime)
-			{
-				if (powerUp instanceof Boost)
+			powerUps.forEach( (powerUp, time) -> {
+				// +5 allows power ups to be in action for 5 seconds (since time is 2 seconds behind 
+				// the time game has been running for.
+				if (time+3 > raceTime)
 				{
-					car.setCurrentSpeed(Car.Speed.BOOST_MOVEMENT_SPEED.getValue());
-				}		
-				else if (powerUp instanceof SlowDown)
-				{
-					car.setCurrentSpeed(Car.Speed.SLOW_MOVEMENT_SPEED.getValue());
+					if (powerUp instanceof Boost)
+					{
+						car.setCurrentSpeed(Car.Speed.BOOST_MOVEMENT_SPEED.getValue());
+					}		
+					else if (powerUp instanceof SlowDown)
+					{
+						car.setCurrentSpeed(Car.Speed.SLOW_MOVEMENT_SPEED.getValue());
+					}
+					else if (powerUp instanceof TimeSlow)
+					{
+						setTimeGap(TimeGap.SLOW.getTime());
+					}
 				}
-				else if (powerUp instanceof TimeSlow)
+				else
 				{
-					setTimeGap(TimeGap.SLOW.getTime());
+					if (powerUp instanceof Boost || powerUp instanceof SlowDown)
+					{
+						car.setCurrentSpeed(Car.Speed.NORMAL_MOVEMENT_SPEED.getValue());
+						powerUps.remove(powerUp, time);
+					}
+					else if (powerUp instanceof TimeSlow)
+					{
+						setTimeGap(TimeGap.NORMAL.getTime());
+						powerUps.remove(powerUp, time);
+					}
 				}
-			}
-			else
-			{
-				car.setPowerUp(null);
-				car.setCurrentSpeed(Car.Speed.NORMAL_MOVEMENT_SPEED.getValue());
-				setTimeGap(TimeGap.NORMAL.getTime());
-			}
+			});
 		}
 		else
 		{
-			car.setCurrentSpeed(Car.Speed.NORMAL_MOVEMENT_SPEED.getValue());
+			car.setCurrentSpeed(Speed.NORMAL_MOVEMENT_SPEED.getValue());
 		}
 	}	
 	
