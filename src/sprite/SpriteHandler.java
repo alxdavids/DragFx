@@ -185,7 +185,7 @@ public class SpriteHandler extends Vector<Sprite>
 					Sprite sprite = this.elementAt(i);
 					if (sprite instanceof Wall)
 					{
-						/*// Keep this for now -- working on some different collisions stuff using the intersections of rectangles
+						// Keep this for now -- working on some different collisions stuff using the intersections of rectangles
 						Rectangle rectCar = car.getRectangle();
 						Rectangle rectWall = ((Wall) sprite).getRectangle();
 						
@@ -201,7 +201,8 @@ public class SpriteHandler extends Vector<Sprite>
 						{
 							boolean applyX = false;
 							boolean applyY = false;
-							if (Wall.Dimension.HEIGHT.getValue() - yDiff > Wall.Dimension.WIDTH.getValue() - xDiff - Car.Dimension.HEIGHT.getValue()/2)
+							if (Wall.Dimension.HEIGHT.getValue() - yDiff > Wall.Dimension.WIDTH.getValue() - xDiff - Car.Dimension.HEIGHT.getValue()
+							  && (xDiff < Wall.Dimension.WIDTH.getValue()*0.75))
 							{
 								if ((carX < wallX && carXMove > 0)
 										|| (carX > wallX && carXMove < 0))
@@ -227,9 +228,9 @@ public class SpriteHandler extends Vector<Sprite>
 
 								car.setCollisionHappened(true);
 							}
-						}*/
+						}
 						
-						double wallX = sprite.getPosX();
+						/*double wallX = sprite.getPosX();
 						double wallY = sprite.getPosY();
 
 						double yDiff = Math.abs(carY-wallY);
@@ -266,7 +267,7 @@ public class SpriteHandler extends Vector<Sprite>
 
 								car.setCollisionHappened(true);
 							}
-						}
+						}*/
 					}
 					else if (sprite instanceof FinishLine)
 					{
