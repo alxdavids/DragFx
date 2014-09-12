@@ -22,7 +22,7 @@ To-do list
 - ~~Ability to choose longer or shorter race tracks with differing amounts of sprites on top~~
 - Improve look and feel of game in general
 	- ~~Make car look better~~ (happy with how these look for now)
-	- Make different looking race tracks
+	- Make different looking race tracks (e.g. space?)
 	- Improve the appearance of stationary sprites
 	- ~~Improve the winner text~~
 - ~~Allow users to pick different colour cars~~
@@ -32,8 +32,8 @@ To-do list
 - ~~Leaderboard~~
 - Sound effects for collisions/engines etc.
 - ~~Pickups that provide bonuses to the player (faster car, timer slowdown in single player etc.)~~ (Added some but wiill probably want more as time goes on)
-- More players with cars able to finish in position.
-- Improve time slow image
+- More players with cars able to finish in position. (Keyboard limitations should be considered)
+- ~~Improve time slow image~~
 
 
 (Much Later)
